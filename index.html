@@ -93,7 +93,9 @@ h1,h2,h3{font-family:'Playfair Display',serif}
   <button class="nav-btn"        id="nav-jobs"      onclick="goto('jobs')">💼 Jobs</button>
   <button class="nav-btn"        id="nav-recruiter" onclick="goto('recruiter')">🔍 Recruiter</button>
   <button class="nav-btn"        id="nav-agents"    onclick="goto('agents')">🤖 AI Agents</button>
-  <button class="nav-btn"        id="nav-pricing"   onclick="goto('pricing')">💰 Pricing</button>
+  <button class="nav-btn"        id="nav-pricing"   onclick="goto('pricing')">💰 Pricing</button><button class="nav-btn" id="nav-admin" onclick="goto('admin')"> Admin</button>
+        <button class="nav-btn" id="nav-payments" onclick="goto('payments')"> Payments</button>
+
   <div class="live-dot" title="Live"></div>
 </nav>
 
@@ -903,7 +905,57 @@ PAGES.pricing = ()=>{
   </div>
 </div>`;};
 
-// ─── ACTIONS ───────────────────────────────────────────────────────────────
+
+    // ─── ADMIN DASHBOARD ─────────────────────────────────────────────
+    PAGES.admin = () => `
+      <div style="background:var(--bg);min-height:100vh;padding:40px">
+        <div style="max-width:1000px;margin:0 auto">
+          <h2 style="font-size:28px;margin-bottom:20px">Admin Dashboard</h2>
+          <p style="font-size:13px;color:var(--mid);margin-bottom:20px">Platform metrics and management tools will appear here.</p>
+          <div class="grid-3">
+            <div class="card">
+              <div style="font-size:20px;font-weight:700;color:var(--blue)">Users</div>
+              <div style="font-size:36px;font-weight:900;color:var(--txt)">1,000+</div>
+              <div style="font-size:12px;color:var(--mid)">Total registered professionals.</div>
+            </div>
+            <div class="card">
+              <div style="font-size:20px;font-weight:700;color:var(--green)">Marketplace Items</div>
+              <div style="font-size:36px;font-weight:900;color:var(--txt)">500+</div>
+              <div style="font-size:12px;color:var(--mid)">Active courses, templates & more.</div>
+            </div>
+            <div class="card">
+              <div style="font-size:20px;font-weight:700;color:var(--purple)">Recruiters</div>
+              <div style="font-size:36px;font-weight:900;color:var(--txt)">50+</div>
+              <div style="font-size:12px;color:var(--mid)">Companies searching for talent.</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // ─── PAYMENTS ─────────────────────────────────────────────────────
+    PAGES.payments = () => `
+      <div style="background:var(--bg);min-height:100vh;padding:40px">
+        <div style="max-width:800px;margin:0 auto">
+          <h2 style="font-size:28px;margin-bottom:20px">Payments</h2>
+          <p style="font-size:13px;color:var(--mid)">This static demo site does not process real payments. To enable payments, integrate a provider like Stripe on the server side.</p>
+          <div class="card" style="margin-top:20px">
+            <div style="font-size:11px;color:var(--mute);margin-bottom:8px">Example Transactions (static)</div>
+            <div style="font-size:12px;color:var(--mid)">
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--brd);padding:6px 0">
+                <span>Course sale</span><span>$49</span><span>Feb 2, 2026</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--brd);padding:6px 0">
+                <span>Template sale</span><span>$19</span><span>Feb 5, 2026</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:6px 0">
+                <span>AI credit purchase</span><span>$4</span><span>Feb 8, 2026</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    // ─── ACTIONS ───────────────────────────────────────────────────────────────
 INITS = {};
 function heroSignup(){const e=document.getElementById('hero-email');if(e&&e.value){document.getElementById('hero-success').style.display='flex';}}
 function buyBoost(){state.boostBought=true;const b=document.getElementById('boost-banner');if(b)b.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--greenbg);border-bottom:1px solid #10b98144"><span>✅</span><span style="font-size:11px;color:var(--green)">Profile Boosted! You\'ll appear in top 3 recruiter results for 30 days.</span></div>';}
