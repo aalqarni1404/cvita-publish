@@ -940,11 +940,13 @@ PAGES.pricing = ()=>{
       <div style="background:var(--bg);min-height:100vh;padding:40px">
         <div style="max-width:800px;margin:0 auto">
           <h2 style="font-size:28px;margin-bottom:20px">Payments</h2>
-          <p style="font-size:13px;color:var(--mid)">This static demo site does not process real payments. To enable payments, integrate a provider like Stripe on the server side.</p>
+          <p style="font-size:13px;color:var(--mid)">This site is connected to a demo API. Use the button below to create a test payment intent via Stripe. No real charge will occur without valid keys.</p>
           <div class="card" style="margin-top:20px">
             <div style="font-size:11px;color:var(--mute);margin-bottom:8px">Transactions</div>
-                 <div id="payments-list" style="font-size:12px;color:var(--mid)"></div>
-               </div>
+            <div id="payments-list" style="font-size:12px;color:var(--mid)"></div>
+            <div style="margin-top:12px;text-align:center">
+              <button onclick="checkout(5, 'Test Support Payment')" style="padding:6px 12px;font-size:12px;background:var(--blue);color:white;border-radius:4px;border:none;cursor:pointer">Make Test Payment ($5)</button>
+            </div>
           </div>
         </div>
       </div>`;
@@ -982,6 +984,27 @@ async function loadPayments() {
     }
   } catch (err) {
     console.error('Failed to load payments', err);
+  }
+}
+
+// Create a test payment intent via the backend. This uses Stripe on the server.
+async function checkout(amount, description) {
+  try {
+    const res = await fetch('/api/payments/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, description })
+    });
+    const data = await res.json();
+    if (data.clientSecret) {
+      alert('Payment intent created. Client secret: ' + data.clientSecret);
+    } else if (data.error) {
+      alert('Payment error: ' + data.error);
+    } else {
+      alert('Unexpected response');
+    }
+  } catch (err) {
+    alert('Failed to initiate payment: ' + err.message);
   }
 }
 
