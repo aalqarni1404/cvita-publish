@@ -124,7 +124,10 @@ function goto(page){
   div.className = 'page';
   div.innerHTML = PAGES[page]();
   app.appendChild(div);
-  setTimeout(()=>{ if(INITS[page]) INITS[page](); },10);
+  setTimeout(() => {
+    if (INITS[page]) INITS[page]();
+    if (typeof AFTER_LOAD !== 'undefined' && AFTER_LOAD[page]) { try { AFTER_LOAD[page](); } catch(e) { console.error(e); } }
+  }, 10);
   window.scrollTo(0,0);
 }
 function openModal(html){ document.getElementById('modal-content').innerHTML=html; document.getElementById('modal-overlay').classList.add('open'); }
@@ -915,17 +918,17 @@ PAGES.pricing = ()=>{
           <div class="grid-3">
             <div class="card">
               <div style="font-size:20px;font-weight:700;color:var(--blue)">Users</div>
-              <div style="font-size:36px;font-weight:900;color:var(--txt)">1,000+</div>
+              <div id=\"admin-users\" style="font-size:36px;font-weight:900;color:var(--txt)">1,000+</div>
               <div style="font-size:12px;color:var(--mid)">Total registered professionals.</div>
             </div>
             <div class="card">
               <div style="font-size:20px;font-weight:700;color:var(--green)">Marketplace Items</div>
-              <div style="font-size:36px;font-weight:900;color:var(--txt)">500+</div>
+              <div id=\"admin-marketplace\" style="font-size:36px;font-weight:900;color:var(--txt)">500+</div>
               <div style="font-size:12px;color:var(--mid)">Active courses, templates & more.</div>
             </div>
             <div class="card">
               <div style="font-size:20px;font-weight:700;color:var(--purple)">Recruiters</div>
-              <div style="font-size:36px;font-weight:900;color:var(--txt)">50+</div>
+              <div id=\"admin-recruiters\" style="font-size:36px;font-weight:900;color:var(--txt)">50+</div>
               <div style="font-size:12px;color:var(--mid)">Companies searching for talent.</div>
             </div>
           </div>
@@ -939,24 +942,53 @@ PAGES.pricing = ()=>{
           <h2 style="font-size:28px;margin-bottom:20px">Payments</h2>
           <p style="font-size:13px;color:var(--mid)">This static demo site does not process real payments. To enable payments, integrate a provider like Stripe on the server side.</p>
           <div class="card" style="margin-top:20px">
-            <div style="font-size:11px;color:var(--mute);margin-bottom:8px">Example Transactions (static)</div>
-            <div style="font-size:12px;color:var(--mid)">
-              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--brd);padding:6px 0">
-                <span>Course sale</span><span>$49</span><span>Feb 2, 2026</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--brd);padding:6px 0">
-                <span>Template sale</span><span>$19</span><span>Feb 5, 2026</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;padding:6px 0">
-                <span>AI credit purchase</span><span>$4</span><span>Feb 8, 2026</span>
-              </div>
-            </div>
+            <div style="font-size:11px;color:var(--mute);margin-bottom:8px">Transactions</div>
+                 <div id="payments-list" style="font-size:12px;color:var(--mid)"></div>
+               </div>
           </div>
         </div>
       </div>`;
 
     // ─── ACTIONS ───────────────────────────────────────────────────────────────
 INITS = {};
+// Define functions to load dynamic data for specific pages
+const AFTER_LOAD = {};
+
+async function loadAdminMetrics() {
+  try {
+    const res = await fetch('/api/admin/metrics');
+    const data = await res.json();
+    document.getElementById('admin-users')?.textContent = data.users;
+    document.getElementById('admin-marketplace')?.textContent = data.marketplaceItems;
+    document.getElementById('admin-recruiters')?.textContent = data.recruiters;
+  } catch (err) {
+    console.error('Failed to load admin metrics', err);
+  }
+}
+
+async function loadPayments() {
+  try {
+    const res = await fetch('/api/payments');
+    const items = await res.json();
+    const list = document.getElementById('payments-list');
+    if (list) {
+      list.innerHTML = items.map(item => 
+        `<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--brd);padding:6px 0">
+           <span>${item.description}</span>
+           <span>$${item.amount}</span>
+           <span>${item.date}</span>
+        </div>`
+      ).join('');
+    }
+  } catch (err) {
+    console.error('Failed to load payments', err);
+  }
+}
+
+// Register after load hooks
+AFTER_LOAD.admin = loadAdminMetrics;
+AFTER_LOAD.payments = loadPayments;
+
 function heroSignup(){const e=document.getElementById('hero-email');if(e&&e.value){document.getElementById('hero-success').style.display='flex';}}
 function buyBoost(){state.boostBought=true;const b=document.getElementById('boost-banner');if(b)b.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--greenbg);border-bottom:1px solid #10b98144"><span>✅</span><span style="font-size:11px;color:var(--green)">Profile Boosted! You\'ll appear in top 3 recruiter results for 30 days.</span></div>';}
 function switchSection(id){state.activeSection=id;document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));const si=document.getElementById('si-'+id);if(si)si.classList.add('active');const sc=document.getElementById('section-content');if(sc)sc.innerHTML=getSectionContent(id);const st=document.getElementById('section-title');if(st)st.textContent=SECTIONS.find(s=>s.id===id)?.icon+' '+id.toUpperCase();const tb=document.getElementById('ai-tips-box');if(tb)tb.style.display='none';}
