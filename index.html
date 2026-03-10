@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="CVita — The Living Career Story Platform. CV builder, knowledge marketplace, patents, ventures, job board and AI agents."/>
+  <meta property="og:title" content="CVita — Your Career Story. Your Knowledge. Your Income."/>
+  <meta property="og:description" content="The first platform that turns your professional profile into a revenue engine."/>
+  <title>CVita — The Living Career Story Platform</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; width: 100%; }
+    body {
+      font-family: Georgia, serif;
+      -webkit-font-smoothing: antialiased;
+      background: #0a0e1a;
+      color: #e2e8f0;
+    }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0a0e1a; }
+    ::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @keyframes glow { 0%,100%{box-shadow:0 0 20px #2563eb33} 50%{box-shadow:0 0 40px #2563eb77} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    #root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React 18 + Babel Standalone (no build needed) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+
+const T = {
+  bg:"#f5f7fc", surface:"#fff", panel:"#f0f2f8", border:"#e2e6f0",
+  text:"#0d1117", mid:"#445069", mute:"#8694b0",
+  dark:"#0a0f1e", darkS:"#0f1628", darkB:"#1c2d45",
+  blue:"#2563eb", blueBg:"#eff6ff", blueBrd:"#bfdbfe",
+  gold:"#d97706", goldBg:"#fffbeb", goldBrd:"#fcd34d",
+  green:"#059669", greenBg:"#ecfdf5", greenBrd:"#6ee7b7",
+  purple:"#7c3aed", purpleBg:"#f5f3ff", purpleBrd:"#ddd6fe",
+  red:"#dc2626", redBg:"#fef2f2", redBrd:"#fecaca",
+  teal:"#0891b2", orange:"#ea580c",
+};
+
+const Btn = ({ children, v="primary", onClick, disabled, size="md", style={} }) => {
+  const p = size==="sm"?"6px 13px":size==="lg"?"14px 32px":"9px 20px";
+  const fs = size==="sm"?"10px":size==="lg"?"14px":"12px";
+  const vs = {
+    primary:{ background:`linear-gradient(135deg,${T.blue},#3b82f6)`, color:"#fff", border:"none" },
+    gold:   { background:`linear-gradient(135deg,${T.gold},#f59e0b)`, color:"#fff", border:"none" },
+    ghost:  { background:"transparent", color:T.mid, border:`1px solid ${T.border}` },
+    dark:   { background:`linear-gradient(135deg,#1e2d45,#243450)`, color:"#e2e8f0", border:"1px solid #2d4060" },
+    green:  { background:`linear-gradient(135deg,${T.green},#10b981)`, color:"#fff", border:"none" },
+    purple: { background:`linear-gradient(135deg,${T.purple},#6d28d9)`, color:"#fff", border:"none" },
+  };
+  const s = vs[v]||vs.primary;
+  return <button onClick={onClick} disabled={disabled} style={{...s,padding:p,fontFamily:"monospace",fontSize:fs,fontWeight:"bold",cursor:disabled?"not-allowed":"pointer",borderRadius:"7px",opacity:disabled?0.5:1,transition:"all 0.15s",...style}}>{children}</button>;
+};
+
+const Badge = ({label,color,bg,icon=""}) => (
+  <span style={{display:"inline-flex",alignItems:"center",gap:"3px",fontFamily:"monospace",fontSize:"10px",fontWeight:"700",color,background:bg,border:`1px solid ${color}33`,padding:"2px 8px",borderRadius:"20px",whiteSpace:"nowrap"}}>{icon}{label}</span>
+);
+
+const Card = ({children,style={},onClick}) => (
+  <div onClick={onClick} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:"12px",padding:"16px",boxShadow:"0 1px 4px rgba(0,0,0,0.05)",transition:"all 0.18s",cursor:onClick?"pointer":"default",...style}}>{children}</div>
+);
+
+const SL = ({children}) => <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mute,letterSpacing:"2px",marginBottom:"12px"}}>{children}</div>;
+
+function uid(){ return Math.random().toString(36).slice(2,8); }
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+const PLANS = [
+  { id:"free",    name:"Free",       price:0,  color:T.mute,   tag:"",              cta:"Start Free",             features:["Basic CV (5 sections)","3 hashtags","1 knowledge item","Public profile","2 AI runs/month","PDF with watermark"],                        missing:["Patents & IP","Brand section","Knowledge sales","No-watermark export","Recruiter visibility"] },
+  { id:"pro",     name:"Pro",        price:15, color:T.blue,   tag:"MOST POPULAR",  cta:"Start Pro — $15/mo",     features:["All 10 CV sections","Unlimited hashtags","Unlimited knowledge items","💰 Sell content (keep 85%)","20 AI runs/month","No-watermark PDF+DOCX","Priority recruiter visibility"], missing:["Recruiter portal access","Custom domain"] },
+  { id:"creator", name:"Creator",    price:29, color:T.gold,   tag:"BEST EARNINGS", cta:"Start Creator — $29/mo", features:["Everything in Pro","Keep 92% of knowledge sales","50 AI runs/month","⭐ Top 3 recruiter search","Featured badge on profile","Analytics dashboard","Custom profile domain"], missing:["Recruiter portal access"] },
+  { id:"ent",     name:"Enterprise", price:99, color:T.purple, tag:"FOR TEAMS",     cta:"Contact Sales",          features:["Everything in Creator","Team dashboard (20 users)","Recruiter portal included","Unlimited AI runs","API access","ATS integration","Dedicated support"], missing:[] },
+];
+
+const REC_PLANS = [
+  { id:"starter", name:"Starter", price:99,  color:T.teal,   tag:"",        cta:"Start Recruiting",  features:["50 candidate unlocks/mo","Hashtag search & filter","Save & pipeline tools","5 job posts/month","Basic analytics"], missing:[] },
+  { id:"growth",  name:"Growth",  price:299, color:T.blue,   tag:"POPULAR", cta:"Start Growth",      features:["Unlimited candidate unlocks","Advanced hashtag targeting","AI outreach writer","Unlimited job posts","Full analytics & ATS export"], missing:[] },
+  { id:"agency",  name:"Agency",  price:899, color:T.purple, tag:"",        cta:"Contact Sales",     features:["Everything in Growth","10 recruiter seats","Client reporting portal","API access","Dedicated account manager"], missing:[] },
+];
+
+const MARKET_ITEMS = [
+  { id:uid(), author:"Alex Morgan",    av:"AM", avc:T.blue,   title:"UX Research Methods Masterclass",      type:"Course",   icon:"📚", price:49, rating:4.9, reviews:187, students:1240, tags:["UXResearch","Design"],        badge:"Bestseller", bc:T.gold,  desc:"6-week deep dive into qualitative & quantitative research methods with live templates and a certificate." },
+  { id:uid(), author:"Priya Nair",     av:"PN", avc:T.purple, title:"Product Strategy for SaaS Leaders",    type:"Course",   icon:"📚", price:79, rating:4.8, reviews:134, students:890,  tags:["ProductStrategy","SaaS"],     badge:"New",        bc:T.green, desc:"Complete framework for building roadmaps that align with business goals. Used by 30+ PMs at top companies." },
+  { id:uid(), author:"Alex Morgan",    av:"AM", avc:T.blue,   title:"Design Systems Slide Deck Template",   type:"Template", icon:"📊", price:19, rating:4.7, reviews:312, students:2100, tags:["Figma","DesignSystems"],      badge:"Top Rated",  bc:T.teal,  desc:"80-slide Figma template used by 200+ product teams. Includes component variants, brand tokens, and guide." },
+  { id:uid(), author:"Omar Al-Rashid", av:"OA", avc:T.orange, title:"ML for Finance: From Scratch",         type:"Lecture",  icon:"🎓", price:39, rating:4.9, reviews:98,  students:560,  tags:["MachineLearning","FinTech"],  badge:"",           bc:"",      desc:"Applied ML for financial services. Covers fraud detection, credit scoring, and algorithmic trading in Python." },
+  { id:uid(), author:"Sophie Laurent", av:"SL", avc:T.teal,   title:"Growth Marketing Playbook 2025",       type:"eBook",    icon:"📖", price:29, rating:4.6, reviews:203, students:1540, tags:["Marketing","GrowthHacking"],  badge:"Bestseller", bc:T.gold,  desc:"140-page playbook covering SEO, paid ads, email, and retention with real case studies and templates." },
+  { id:uid(), author:"James Okafor",   av:"JO", avc:T.green,  title:"Full-Stack API Architecture Workshop", type:"Workshop", icon:"🛠", price:59, rating:4.8, reviews:76,  students:430,  tags:["Backend","NodeJS"],           badge:"",           bc:"",      desc:"3-hour workshop on scalable REST & GraphQL APIs: auth, rate limiting, caching, and cloud deployment." },
+];
+
+const JOBS = [
+  { id:uid(), co:"Stripe",   logo:"💳", role:"Senior Product Designer",      loc:"SF / Remote",  type:"Full-time", salary:"$140k–$180k", tags:["ProductDesign","Figma","DesignSystems","FinTech"], posted:"2d", apps:47,  match:94, urgent:true  },
+  { id:uid(), co:"Notion",   logo:"📝", role:"Head of Design",               loc:"Remote",        type:"Full-time", salary:"$160k–$210k", tags:["ProductDesign","Leadership","DesignSystems"],       posted:"1d", apps:89,  match:88, urgent:false },
+  { id:uid(), co:"Vercel",   logo:"▲",  role:"UX Designer — Design Systems", loc:"Remote",        type:"Full-time", salary:"$110k–$140k", tags:["UXDesign","DesignTokens","Figma","RemoteWork"],      posted:"3d", apps:62,  match:91, urgent:false },
+  { id:uid(), co:"Figma",    logo:"🎨", role:"Staff Product Designer",        loc:"San Francisco", type:"Full-time", salary:"$170k–$220k", tags:["ProductDesign","UserResearch","Leadership"],         posted:"5d", apps:210, match:96, urgent:true  },
+  { id:uid(), co:"Linear",   logo:"⚡", role:"Product Manager",               loc:"Remote",        type:"Full-time", salary:"$130k–$165k", tags:["ProductManager","Agile","SaaS"],                    posted:"4d", apps:55,  match:72, urgent:false },
+  { id:uid(), co:"Luma AI",  logo:"🔮", role:"AI Product Designer",           loc:"SF / Hybrid",   type:"Hybrid",    salary:"$150k–$195k", tags:["ProductDesign","AI","MachineLearning"],              posted:"1d", apps:33,  match:89, urgent:true  },
+];
+
+const CANDIDATES = [
+  { id:"c1", name:"Alex Morgan",    av:"AM", col:T.blue,   title:"Senior Product Designer", loc:"San Francisco", status:"🟢 Open to Work", match:94, tags:["ProductDesign","UXDesign","OpenToWork","Figma","DesignSystems","AI","RemoteWork"], salary:"$120k–$145k", exp:"5 yrs", score:82 },
+  { id:"c2", name:"James Okafor",   av:"JO", col:T.green,  title:"Full Stack Engineer",     loc:"Remote",        status:"🟢 Open to Work", match:88, tags:["FullStack","React","Python","Backend","OpenToWork","RemoteWork","DevOps"],          salary:"$90k–$115k",  exp:"7 yrs", score:91 },
+  { id:"c3", name:"Priya Nair",     av:"PN", col:T.purple, title:"Product Manager",         loc:"London",        status:"🔵 Networking",   match:76, tags:["ProductManager","Agile","SaaS","B2B","Networking","FinTech"],                       salary:"£80k–£100k",  exp:"6 yrs", score:75 },
+  { id:"c4", name:"Omar Al-Rashid", av:"OA", col:T.orange, title:"Data Scientist",          loc:"Dubai",         status:"🟢 Open to Work", match:85, tags:["DataScience","AI","Python","OpenToWork","FinTech","MachineLearning"],                salary:"$95k–$120k",  exp:"4 yrs", score:88 },
+];
+
+const AI_RESULTS = {
+  cv:      "REWRITES:\n• 'Led' component library redesign → design debt ↓40%, sprint velocity ↑2.3×\n• Drove 3 product launches with 12 cross-functional PMs\n• Mentored 4 designers → team output quality ↑35%\n\nKEYWORDS ADDED: design systems · cross-functional · OKRs\nSCORE: 74 → 88 (+14 pts) ↑",
+  hashtag: "ADD NOW:\n#UXLeadership — 340% YoY recruiter search growth\n#DesignTokens — high signal, low competition\n#AIDesign — fast-growing niche\n\nKEEP: #DesignSystems · #OpenToWork · #Figma\nREMOVE: #Designer — too broad, poor signal\n\nVISIBILITY UPLIFT: +64% estimated ↑",
+  price:   "UX Masterclass: $49 → $79 (+$5,580/yr)\n  Udemy market: $79–$149 · Your demand: strong\n\nDesign Deck: $19 → $29 (+$3,120/yr)\n  Gumroad market: $24–$49\n\nTOTAL ANNUAL UPLIFT: +$8,700 💰",
+  patent:  "ABSTRACT: A system for dynamically adapting UI layouts based on real-time user behaviour signals and accessibility requirements...\n\nCLAIM 1: A method comprising: (a) collecting real-time interaction signals; (b) assessing WCAG compliance; (c) propagating token changes across platforms.\n\nPRIOR ART: Distinguished from US10,482,091 (Adobe) by real-time co-optimization.",
+  outreach:"SUBJECT: Your #DesignSystems work at Figma caught my eye\n\nHi Alex — your DesignOS platform and Adaptive UI patent are exactly the systems-thinking we need at Stripe.\n\nWe're hiring a Staff Designer and your #DesignTokens + #AIDesign background is rare.\n\nOpen to a 20-min call this week?",
+  roadmap: "TARGET: CPO at Series B fintech — 3 years\n\nQ1: Apply to Head of Design at 3 Series B companies\nQ2: Own a product OKR, not just design deliverables\nQ3: Ship a metric-driven feature solo\nQ4: Manage a team of 4+\n\nTHIS WEEK:\n1. Add #UXLeadership → 3× recruiter views\n2. Apply to Notion Head of Design (88% match)\n3. Update ComponentCraft revenue in Brand section",
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// LANDING PAGE
+// ═══════════════════════════════════════════════════════════════════
+function Landing({ goto }) {
+  const [email, setEmail] = useState("");
+  const [joined, setJoined] = useState(false);
+
+  return (
+    <div style={{background:T.dark,color:"#e2e8f0",fontFamily:"Georgia,serif",minHeight:"100vh"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');
+        *{box-sizing:border-box;margin:0;padding:0;}
+        @keyframes glow{0%,100%{box-shadow:0 0 20px #2563eb44}50%{box-shadow:0 0 40px #2563eb88}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+      `}</style>
+
+      {/* HERO */}
+      <div style={{padding:"72px 24px 52px",maxWidth:"860px",margin:"0 auto",textAlign:"center",animation:"fadeUp 0.7s ease"}}>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"8px",background:"#1d3a6e",border:"1px solid #2563eb55",borderRadius:"24px",padding:"6px 16px",marginBottom:"24px"}}>
+          <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#60a5fa",animation:"blink 2s infinite"}}/>
+          <span style={{fontFamily:"Space Grotesk",fontSize:"12px",color:"#93c5fd",fontWeight:"500"}}>New — Knowledge Marketplace + Job Board now live</span>
+        </div>
+
+        <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(36px,6.5vw,66px)",fontWeight:"900",lineHeight:"1.08",marginBottom:"20px"}}>
+          <span style={{background:"linear-gradient(135deg,#e2e8f0 40%,#60a5fa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Your Career Story.</span><br/>
+          <span style={{background:"linear-gradient(135deg,#60a5fa,#a78bfa)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Your Knowledge.</span><br/>
+          <span style={{background:"linear-gradient(135deg,#a78bfa,#f59e0b)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Your Income.</span>
+        </h1>
+
+        <p style={{fontFamily:"Space Grotesk",fontSize:"17px",color:"#94a3b8",lineHeight:"1.7",maxWidth:"560px",margin:"0 auto 32px"}}>
+          The first platform that turns your CV into a <strong style={{color:"#e2e8f0"}}>revenue engine</strong> — sell your knowledge, get discovered by recruiters, showcase your ventures, and let AI agents optimize everything.
+        </p>
+
+        {!joined ? (
+          <div style={{display:"flex",gap:"8px",justifyContent:"center",flexWrap:"wrap",marginBottom:"12px"}}>
+            <input value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&email&&setJoined(true)} placeholder="your@email.com" style={{width:"270px",background:"#0f1628",border:"1px solid #2d4060",color:"#e2e8f0",fontFamily:"Space Grotesk",fontSize:"14px",padding:"13px 16px",outline:"none",borderRadius:"8px"}} onFocus={e=>e.target.style.borderColor=T.blue} onBlur={e=>e.target.style.borderColor="#2d4060"}/>
+            <button onClick={()=>{if(email)setJoined(true);}} style={{background:`linear-gradient(135deg,${T.blue},#3b82f6)`,color:"#fff",border:"none",padding:"13px 26px",fontFamily:"monospace",fontSize:"13px",fontWeight:"bold",cursor:"pointer",borderRadius:"8px",animation:"glow 2.5s infinite"}}>GET STARTED FREE →</button>
+          </div>
+        ) : (
+          <div style={{display:"inline-flex",alignItems:"center",gap:"9px",background:T.greenBg,border:`1px solid ${T.greenBrd}`,borderRadius:"10px",padding:"12px 20px",marginBottom:"12px"}}>
+            <span>🎉</span><span style={{fontFamily:"Space Grotesk",fontSize:"14px",color:T.green,fontWeight:"600"}}>You're on the list! We'll email you shortly.</span>
+          </div>
+        )}
+        <div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:"#334155"}}>Free forever plan · No credit card · Cancel anytime</div>
+
+        {/* Social proof */}
+        <div style={{display:"flex",borderTop:"1px solid #1c2d45",paddingTop:"36px",marginTop:"44px"}}>
+          {[["4,218","Professionals"],["$134k","Knowledge sold / month"],["94%","Avg recruiter match"],["8","AI agents"]].map(([v,l],i)=>(
+            <div key={l} style={{flex:1,textAlign:"center",borderRight:i<3?"1px solid #1c2d45":"none",padding:"0 14px"}}>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"26px",fontWeight:"900",color:"#60a5fa"}}>{v}</div>
+              <div style={{fontFamily:"Space Grotesk",fontSize:"11px",color:"#475569",marginTop:"3px"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 3 WAYS TO EARN */}
+      <div style={{background:"#0f1628",borderTop:"1px solid #1c2d45",borderBottom:"1px solid #1c2d45",padding:"48px 24px"}}>
+        <div style={{maxWidth:"960px",margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:"32px"}}>
+            <div style={{fontFamily:"monospace",fontSize:"10px",color:"#334155",letterSpacing:"2px",marginBottom:"8px"}}>WHY CVITA IS DIFFERENT</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"24px",fontWeight:"900"}}>3 ways CVita makes you money</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:"13px"}}>
+            {[
+              {icon:"🎓",color:"#f59e0b",title:"Sell Your Knowledge",   desc:"Upload courses, keynotes, or templates. Set your price. Keep 85–92% of every sale, paid weekly.",           eg:"Alex sold $13k in courses in 60 days."},
+              {icon:"🔍",color:"#06b6d4",title:"Get Found by Recruiters",desc:"Set hashtags like #OpenToWork. Recruiters pay CVita to unlock your contact. You get warm, direct outreach.",eg:"James received 3 job offers in 2 weeks."},
+              {icon:"🚀",color:"#a78bfa",title:"Showcase Your Ventures", desc:"List startups with funding, revenue, and traction. Investors and partners find you through your profile.", eg:"Priya landed a Series A intro in 1 week."},
+            ].map(item=>(
+              <div key={item.title} style={{background:"#141c2e",border:`1px solid ${item.color}33`,borderRadius:"14px",padding:"20px",transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=item.color+"77"} onMouseLeave={e=>e.currentTarget.style.borderColor=item.color+"33"}>
+                <div style={{width:"42px",height:"42px",borderRadius:"11px",background:item.color+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"20px",marginBottom:"12px"}}>{item.icon}</div>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:"17px",fontWeight:"700",color:"#e2e8f0",marginBottom:"7px"}}>{item.title}</div>
+                <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:"#94a3b8",lineHeight:"1.6",marginBottom:"9px"}}>{item.desc}</div>
+                <div style={{fontFamily:"monospace",fontSize:"11px",color:item.color,background:item.color+"12",padding:"6px 10px",borderRadius:"6px"}}>💡 {item.eg}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FEATURE GRID */}
+      <div style={{padding:"48px 24px",maxWidth:"960px",margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:"28px"}}>
+          <div style={{fontFamily:"monospace",fontSize:"10px",color:"#334155",letterSpacing:"2px",marginBottom:"7px"}}>FULL PLATFORM</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:"900"}}>Everything a modern professional needs</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:"10px"}}>
+          {[["✍️","CV Builder","10 sections incl. Patents & Brand",T.blue],["🛒","Knowledge Market","Public storefront for your content",T.gold],["💼","Job Board","Jobs matched to your hashtags",T.green],["🏷","Hashtag Network","Talent & recruiters speak one language",T.teal],["⚖️","IP Portfolio","Patents, filings and licensed IP",T.purple],["🤖","AI Agents","8 agents that act on your profile",T.green],["🔍","Recruiter Portal","Hashtag-powered talent discovery",T.teal],["📊","Analytics","Views, saves, and purchase tracking",T.orange]].map(([ic,t,d,c])=>(
+            <div key={t} style={{background:"#0f1628",border:"1px solid #1c2d45",borderRadius:"10px",padding:"14px",transition:"border-color 0.18s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=c+"55"} onMouseLeave={e=>e.currentTarget.style.borderColor="#1c2d45"}>
+              <div style={{width:"32px",height:"32px",borderRadius:"8px",background:c+"18",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px",marginBottom:"8px"}}>{ic}</div>
+              <div style={{fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",color:"#e2e8f0",marginBottom:"3px"}}>{t}</div>
+              <div style={{fontFamily:"Space Grotesk",fontSize:"11px",color:"#475569"}}>{d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* TESTIMONIALS */}
+      <div style={{background:"#0f1628",borderTop:"1px solid #1c2d45",padding:"44px 24px"}}>
+        <div style={{maxWidth:"860px",margin:"0 auto",textAlign:"center"}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"21px",fontWeight:"900",marginBottom:"24px"}}>Trusted by professionals who do more</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:"12px"}}>
+            {[
+              {name:"Sarah K.",  role:"UX Researcher, Google",  text:"3 recruiter messages in a week of setting my hashtags. CVita actually works.",                       av:"SK",col:T.blue},
+              {name:"Marcus T.", role:"Founder, DevFlow",        text:"$12k in course sales in 2 months. The marketplace is incredible and so easy to set up.",           av:"MT",col:T.green},
+              {name:"Yuki H.",   role:"Senior PM, Spotify",      text:"The AI Optimizer rewrote my bullets. Got callbacks from companies that ignored me before.",         av:"YH",col:T.purple},
+            ].map(t=>(
+              <div key={t.name} style={{background:"#141c2e",border:"1px solid #1c2d45",borderRadius:"12px",padding:"16px"}}>
+                <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:"#94a3b8",lineHeight:"1.6",marginBottom:"12px",fontStyle:"italic"}}>"{t.text}"</div>
+                <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
+                  <div style={{width:"28px",height:"28px",borderRadius:"50%",background:t.col+"22",border:`2px solid ${t.col}44`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"monospace",fontSize:"9px",fontWeight:"bold",color:t.col}}>{t.av}</div>
+                  <div>
+                    <div style={{fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",color:"#e2e8f0"}}>{t.name}</div>
+                    <div style={{fontFamily:"Space Grotesk",fontSize:"10px",color:"#475569"}}>{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PRICING TEASER + CTA */}
+      <div style={{padding:"48px 24px",textAlign:"center"}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:"900",marginBottom:"9px"}}>Simple pricing. Real ROI.</div>
+        <div style={{fontFamily:"Space Grotesk",fontSize:"14px",color:"#94a3b8",marginBottom:"22px"}}>The Creator plan pays for itself with your first course sale.</div>
+        <div style={{display:"flex",gap:"9px",justifyContent:"center",flexWrap:"wrap",marginBottom:"14px"}}>
+          {[["Free","$0",false],["Pro","$15/mo",false],["Creator","$29/mo",true],["Enterprise","$99/mo",false]].map(([n,p,best])=>(
+            <div key={n} style={{background:"#0f1628",border:`1px solid ${best?"#f59e0b55":"#1c2d45"}`,borderRadius:"10px",padding:"11px 20px",fontFamily:"monospace",fontSize:"12px",color:best?"#f59e0b":"#94a3b8",fontWeight:best?"bold":"normal"}}>
+              {n} — {p}{best&&<span style={{marginLeft:"5px",background:"#f59e0b22",padding:"1px 6px",borderRadius:"10px",fontSize:"10px"}}>★ BEST</span>}
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>goto("pricing")} style={{background:"transparent",border:`1px solid ${T.blue}`,color:"#60a5fa",padding:"9px 20px",fontFamily:"monospace",fontSize:"12px",cursor:"pointer",borderRadius:"7px"}}>See full pricing →</button>
+      </div>
+      <div style={{background:`linear-gradient(135deg,#1d3a6e,#0f1628)`,borderTop:"1px solid #1c2d45",padding:"48px 24px",textAlign:"center"}}>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:"26px",fontWeight:"900",marginBottom:"11px"}}>Ready to build your career story?</div>
+        <div style={{fontFamily:"Space Grotesk",fontSize:"14px",color:"#94a3b8",marginBottom:"22px"}}>Join 4,218 professionals already earning with CVita</div>
+        <div style={{display:"flex",gap:"11px",justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={()=>goto("dashboard")} style={{background:`linear-gradient(135deg,${T.blue},#3b82f6)`,color:"#fff",border:"none",padding:"13px 28px",fontFamily:"monospace",fontSize:"13px",fontWeight:"bold",cursor:"pointer",borderRadius:"8px"}}>👤 Open Dashboard →</button>
+          <button onClick={()=>goto("market")} style={{background:"transparent",border:"1px solid #2d4060",color:"#94a3b8",padding:"13px 20px",fontFamily:"monospace",fontSize:"13px",cursor:"pointer",borderRadius:"8px"}}>🛒 Browse Marketplace</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRICING PAGE
+// ═══════════════════════════════════════════════════════════════════
+function Pricing({ goto }) {
+  const [tab, setTab] = useState("pro");
+  const plans = tab==="pro" ? PLANS : REC_PLANS;
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",padding:"38px 24px",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}`}</style>
+      <div style={{maxWidth:"1040px",margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:"32px"}}>
+          <SL>PRICING</SL>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"28px",fontWeight:"900",color:T.text,marginBottom:"9px"}}>Pay when CVita makes you money</div>
+          <div style={{fontFamily:"Space Grotesk",fontSize:"14px",color:T.mid,marginBottom:"20px"}}>Free plan always available. Creator plan pays for itself with one course sale.</div>
+          <div style={{display:"inline-flex",background:T.surface,border:`1px solid ${T.border}`,borderRadius:"8px",padding:"3px",gap:"3px"}}>
+            {[["pro","For Professionals"],["recruiter","For Recruiters"]].map(([id,label])=>(
+              <div key={id} onClick={()=>setTab(id)} style={{padding:"7px 18px",fontFamily:"monospace",fontSize:"11px",cursor:"pointer",borderRadius:"6px",background:tab===id?T.blue:"transparent",color:tab===id?"#fff":T.mute,transition:"all 0.15s"}}>{label}</div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(225px,1fr))",gap:"13px",marginBottom:"32px"}}>
+          {plans.map(plan=>{
+            const pop = ["MOST POPULAR","POPULAR","BEST EARNINGS"].includes(plan.tag);
+            return (
+              <div key={plan.id} style={{background:T.surface,border:`2px solid ${pop?plan.color:T.border}`,borderRadius:"14px",overflow:"hidden",boxShadow:pop?`0 4px 24px ${plan.color}22`:"none"}}>
+                {plan.tag&&<div style={{background:plan.color,padding:"5px",textAlign:"center",fontFamily:"monospace",fontSize:"9px",fontWeight:"bold",color:"#fff",letterSpacing:"1px"}}>{plan.tag}</div>}
+                <div style={{padding:"20px"}}>
+                  <div style={{fontFamily:"monospace",fontSize:"13px",fontWeight:"bold",color:plan.color,marginBottom:"7px"}}>{plan.name}</div>
+                  <div style={{display:"flex",alignItems:"baseline",gap:"4px",marginBottom:"14px"}}>
+                    <span style={{fontFamily:"'Playfair Display',serif",fontSize:"32px",fontWeight:"900",color:T.text}}>${plan.price}</span>
+                    <span style={{fontFamily:"monospace",fontSize:"11px",color:T.mute}}>/month</span>
+                  </div>
+                  <div style={{marginBottom:"14px"}}>
+                    {(plan.features||[]).map(f=><div key={f} style={{display:"flex",gap:"7px",fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,padding:"4px 0",borderBottom:`1px solid ${T.border}`}}><span style={{color:T.green,flexShrink:0}}>✓</span>{f}</div>)}
+                    {(plan.missing||[]).map(f=><div key={f} style={{display:"flex",gap:"7px",fontFamily:"Space Grotesk",fontSize:"12px",color:T.mute,padding:"4px 0",borderBottom:`1px solid ${T.border}`}}><span style={{color:T.border,flexShrink:0}}>✗</span>{f}</div>)}
+                  </div>
+                  <button onClick={()=>goto("dashboard")} style={{width:"100%",padding:"10px",fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",cursor:"pointer",borderRadius:"7px",border:"none",background:pop?`linear-gradient(135deg,${plan.color},${plan.color}bb)`:T.panel,color:pop?"#fff":T.mid}}>{plan.cta}</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <Card>
+          <SL>FAQ</SL>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"16px"}}>
+            {[
+              ["Do I keep my data if I downgrade?","Yes. Your data is always yours. Paid features hide but nothing is deleted."],
+              ["When do knowledge earnings pay out?","Every Monday. Minimum $20 threshold. Paid to PayPal or bank."],
+              ["Can I cancel anytime?","Yes. No contracts or fees. One click in Settings."],
+              ["How does the recruiter paywall work?","Recruiters pay per candidate unlock. You get notified and reply directly."],
+              ["What is the platform fee on sales?","Free: N/A · Pro: 15% · Creator: 8% · Enterprise: 5%."],
+              ["Are AI credits extra?","No. Included in plan: Free 2/mo · Pro 20/mo · Creator 50/mo · Enterprise unlimited."],
+            ].map(([q,a])=>(
+              <div key={q}>
+                <div style={{fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",color:T.text,marginBottom:"4px"}}>{q}</div>
+                <div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,lineHeight:"1.6"}}>{a}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function Dashboard({ goto }) {
+  const SECS = ["Profile","Experience","Education","Skills","Certifications","Projects","Hashtags","Knowledge","Patents","Innovation","Brand"];
+  const ICONS = {Profile:"👤",Experience:"💼",Education:"🎓",Skills:"⚡",Certifications:"🏅",Projects:"🔨",Hashtags:"🏷",Knowledge:"📚",Patents:"⚖️",Innovation:"💡",Brand:"🚀"};
+  const COUNTS = {Profile:1,Experience:2,Education:1,Skills:5,Certifications:1,Projects:1,Hashtags:7,Knowledge:5,Patents:2,Innovation:2,Brand:2};
+  const [sec, setSec] = useState("Experience");
+  const [aiRunning, setAiRunning] = useState(false);
+  const [aiTips, setAiTips] = useState(null);
+  const [credits, setCredits] = useState(5);
+  const [boost, setBoost] = useState(true);
+
+  const runAI = async () => {
+    if(credits<=0||aiRunning) return;
+    setAiRunning(true); setAiTips(null); setCredits(c=>c-1);
+    await new Promise(r=>setTimeout(r,2000));
+    setAiRunning(false);
+    const tips = {
+      Experience:["Replace 'worked on' → 'led' (+18% ATS score)","Add metric to bullet 3 — e.g. 'mentored 4 designers, output ↑35%'","Insert 'design systems' keyword (2,400 recruiter searches/mo)"],
+      Knowledge:["UX course underpriced vs market ($79–$149) — raise to $79","Add a free preview clip → purchase conversion ↑40%","Tag with #Coursera #Certificate for marketplace discovery"],
+      Hashtags:["Add #UXLeadership — 340% YoY recruiter growth","Remove #Designer — too broad, poor signal","Add #DesignTokens — high specificity, less competition"],
+    };
+    setAiTips(tips[sec]||["Add one more quantified result to this section.","Link to an external portfolio or GitHub for credibility.","Consider adding a testimonial or award here."]);
+  };
+
+  const renderSec = () => {
+    if(sec==="Experience") return [
+      {title:"Senior Product Designer",org:"Figma Inc.",period:"Mar 2022–Present",  bullets:["Led redesign of component library, reducing design debt by 40%","Collaborated with 12 PMs to ship 3 major product features","Mentored 4 junior designers across EMEA"]},
+      {title:"UX Designer",            org:"Shopify",   period:"Jun 2020–Feb 2022", bullets:["Designed checkout flow improvements increasing conversion by 18%","Ran 30+ user research sessions to validate product hypotheses"]},
+    ].map((e,i)=>(
+      <Card key={i} style={{marginBottom:"10px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
+          <div><div style={{fontFamily:"Georgia,serif",fontWeight:"bold",color:T.text,fontSize:"14px"}}>{e.title}</div><div style={{fontFamily:"monospace",fontSize:"11px",color:T.mid}}>{e.org}</div></div>
+          <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>{e.period}</div>
+        </div>
+        {e.bullets.map((b,j)=><div key={j} style={{display:"flex",gap:"8px",fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,marginTop:"4px"}}><span style={{color:T.gold,flexShrink:0}}>•</span>{b}</div>)}
+      </Card>
+    ));
+
+    if(sec==="Hashtags") return (
+      <Card>
+        <SL>STATUS MODE</SL>
+        <div style={{display:"inline-flex",alignItems:"center",gap:"7px",background:T.greenBg,border:`1px solid ${T.greenBrd}`,borderRadius:"20px",padding:"7px 14px",marginBottom:"14px"}}><span>🟢</span><span style={{fontFamily:"monospace",fontSize:"12px",fontWeight:"bold",color:T.green}}>Open to Work</span></div>
+        <SL>YOUR HASHTAGS</SL>
+        <div style={{display:"flex",flexWrap:"wrap",gap:"7px",marginBottom:"14px"}}>
+          {["ProductDesign","UXDesign","OpenToWork","DesignSystems","Figma","RemoteWork","AI"].map(t=><span key={t} style={{fontFamily:"monospace",fontSize:"11px",background:T.goldBg,border:`1px solid ${T.goldBrd}`,color:T.gold,padding:"4px 11px",borderRadius:"20px"}}>#{t}</span>)}
+        </div>
+        <SL>JOB PREFERENCES</SL>
+        <div style={{display:"flex",gap:"7px"}}>{["Full-time","Remote"].map(j=><span key={j} style={{fontFamily:"monospace",fontSize:"11px",background:T.panel,color:T.mid,padding:"4px 12px",borderRadius:"20px"}}>{j}</span>)}</div>
+      </Card>
+    );
+
+    if(sec==="Knowledge") return [
+      {title:"UX Research Methods Masterclass",  type:"📚 Course",   access:"💰 Paid",   price:"$49", stat:"187 sales · $7,633 earned"},
+      {title:"Design Systems Slide Deck",        type:"📊 Template", access:"💰 Paid",   price:"$19", stat:"312 sales · $5,928 earned"},
+      {title:"The Future of AI in Design",       type:"🎤 Keynote",  access:"🌐 Public", price:"Free",stat:"9,200 views"},
+    ].map((k,i)=>(
+      <Card key={i} style={{marginBottom:"10px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontFamily:"Georgia,serif",fontWeight:"bold",color:T.text,fontSize:"13px",marginBottom:"5px"}}>{k.title}</div>
+            <div style={{display:"flex",gap:"5px"}}>
+              <Badge label={k.type} color={T.mid} bg={T.panel}/>
+              <Badge label={k.access} color={k.access.includes("💰")?T.purple:T.green} bg={k.access.includes("💰")?T.purpleBg:T.greenBg}/>
+            </div>
+          </div>
+          <div style={{textAlign:"right",flexShrink:0}}>
+            <div style={{fontFamily:"monospace",fontSize:"16px",fontWeight:"bold",color:k.access.includes("💰")?T.purple:T.mute}}>{k.price}</div>
+            <div style={{fontFamily:"monospace",fontSize:"10px",color:T.green,marginTop:"1px"}}>{k.stat}</div>
+          </div>
+        </div>
+      </Card>
+    ));
+
+    if(sec==="Patents") return [
+      {t:"Adaptive UI Component Layout System",    n:"US11,234,567",      status:"✅ Granted",color:T.green,bg:T.greenBg},
+      {t:"Gesture-Based Design Token Propagation", n:"PCT/US2023/014892",  status:"⏳ Pending",color:T.gold, bg:T.goldBg},
+    ].map((p,i)=>(
+      <Card key={i} style={{marginBottom:"10px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"5px"}}>
+          <div style={{fontFamily:"Georgia,serif",fontWeight:"bold",color:T.text,fontSize:"13px",flex:1,paddingRight:"12px"}}>⚖️ {p.t}</div>
+          <Badge label={p.status} color={p.color} bg={p.bg}/>
+        </div>
+        <div style={{fontFamily:"monospace",fontSize:"10px",color:T.blue}}>№ {p.n}</div>
+      </Card>
+    ));
+
+    if(sec==="Brand") return [
+      {name:"DesignOS Studio", role:"Founder & CEO",   stage:"Profitable",raised:"Bootstrapped",rev:"$420k ARR",team:"8"},
+      {name:"ComponentCraft",  role:"Co-founder & CPO",stage:"Seed",       raised:"$280k",       rev:"$18k MRR",team:"3"},
+    ].map((v,i)=>(
+      <Card key={i} style={{marginBottom:"10px"}}>
+        <div style={{display:"flex",gap:"12px",alignItems:"flex-start"}}>
+          <div style={{width:"42px",height:"42px",borderRadius:"12px",background:`linear-gradient(135deg,${T.gold},#f59e0b)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"19px",flexShrink:0}}>🚀</div>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"15px",fontWeight:"900",color:T.text,marginBottom:"2px"}}>{v.name}</div>
+            <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mid,marginBottom:"6px"}}>{v.role} · {v.team} people</div>
+            <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+              <Badge label={v.stage} color={T.green} bg={T.greenBg}/>
+              <Badge label={`💜 ${v.raised}`} color={T.purple} bg={T.purpleBg}/>
+              <Badge label={`📈 ${v.rev}`} color={T.green} bg={T.greenBg}/>
+            </div>
+          </div>
+        </div>
+      </Card>
+    ));
+
+    if(sec==="Innovation") return [
+      {t:"DesignOS Platform",       type:"Platform",  stage:"Scaled",   impact:"800+ teams · 12k GitHub stars"},
+      {t:"AI Accessibility Auditor",type:"Algorithm", stage:"Deployed", impact:"67% reduction in a11y bugs"},
+    ].map((item,i)=>(
+      <Card key={i} style={{marginBottom:"10px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"5px"}}>
+          <div style={{fontFamily:"Georgia,serif",fontWeight:"bold",color:T.text,fontSize:"13px"}}>💡 {item.t}</div>
+          <div style={{display:"flex",gap:"5px"}}>
+            <Badge label={item.type} color={T.mid} bg={T.panel}/>
+            <Badge label={item.stage} color={T.green} bg={T.greenBg}/>
+          </div>
+        </div>
+        <div style={{fontFamily:"monospace",fontSize:"11px",color:T.green}}>📈 {item.impact}</div>
+      </Card>
+    ));
+
+    return <Card><div style={{textAlign:"center",padding:"30px",color:T.mute}}><div style={{fontSize:"30px",marginBottom:"8px"}}>{ICONS[sec]||"📄"}</div><div style={{fontFamily:"monospace",fontSize:"11px",letterSpacing:"1px"}}>{sec.toUpperCase()} SECTION</div><div style={{fontFamily:"Space Grotesk",fontSize:"12px",marginTop:"5px",color:T.mute}}>Fill in your {sec.toLowerCase()} details here</div></div></Card>;
+  };
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+
+      {/* Topbar */}
+      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"0 16px",height:"48px",display:"flex",alignItems:"center",gap:"10px",position:"sticky",top:"52px",zIndex:40}}>
+        <span style={{fontFamily:"'Playfair Display',serif",fontSize:"14px",fontWeight:"900",color:T.text}}>Alex Morgan</span>
+        <span style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>Senior Product Designer</span>
+        <div style={{marginLeft:"auto",display:"flex",gap:"6px",alignItems:"center"}}>
+          <Badge label="PRO" color={T.blue} bg={T.blueBg}/>
+          <Badge label="🟢 Open to Work" color={T.green} bg={T.greenBg}/>
+          <span style={{fontFamily:"monospace",fontSize:"10px",background:T.goldBg,color:T.gold,padding:"3px 9px",borderRadius:"20px",border:`1px solid ${T.goldBrd}`}}>Score 82</span>
+          <Btn v="ghost" size="sm" onClick={()=>goto("market")}>🛒 My Shop</Btn>
+          <Btn v="ghost" size="sm" onClick={()=>goto("jobs")}>💼 Jobs</Btn>
+        </div>
+      </div>
+
+      {boost&&(
+        <div style={{background:`linear-gradient(135deg,${T.purple},#6d28d9)`,padding:"8px 16px",display:"flex",alignItems:"center",gap:"12px"}}>
+          <span>⭐</span>
+          <span style={{fontFamily:"monospace",fontSize:"11px",color:"#fff",fontWeight:"bold"}}>Profile Boost — </span>
+          <span style={{fontFamily:"Space Grotesk",fontSize:"12px",color:"#d4c6ff"}}>Appear top 3 in recruiter search for 30 days. Only $9.</span>
+          <Btn size="sm" style={{marginLeft:"auto",background:"#fff",color:T.purple,border:"none"}}>Boost for $9</Btn>
+          <span onClick={()=>setBoost(false)} style={{color:"#ffffff66",cursor:"pointer",fontSize:"14px"}}>✕</span>
+        </div>
+      )}
+
+      <div style={{display:"grid",gridTemplateColumns:"176px 1fr 250px",height:"calc(100vh - 100px)",overflow:"hidden"}}>
+        {/* Sidebar */}
+        <div style={{borderRight:`1px solid ${T.border}`,background:T.surface,padding:"10px 7px",overflowY:"auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:"9px",color:T.mute,letterSpacing:"2px",padding:"4px 9px",marginBottom:"4px"}}>CV SECTIONS</div>
+          {SECS.map(s=>(
+            <div key={s} onClick={()=>{setSec(s);setAiTips(null);}} style={{padding:"7px 10px",marginBottom:"2px",cursor:"pointer",fontFamily:"monospace",fontSize:"11px",borderRadius:"5px",background:sec===s?T.goldBg:"transparent",color:sec===s?T.gold:T.mute,borderLeft:`2px solid ${sec===s?T.gold:"transparent"}`,display:"flex",justifyContent:"space-between"}}>
+              <span>{ICONS[s]} {s}</span><span style={{fontSize:"10px",color:T.border}}>{COUNTS[s]}</span>
+            </div>
+          ))}
+          <div style={{marginTop:"13px",borderTop:`1px solid ${T.border}`,paddingTop:"10px"}}>
+            <div style={{fontFamily:"monospace",fontSize:"9px",color:T.mute,letterSpacing:"2px",padding:"4px 9px",marginBottom:"4px"}}>QUICK LINKS</div>
+            {[["🛒","Knowledge Shop",()=>goto("market")],["💼","Browse Jobs",()=>goto("jobs")],["🤖","AI Agents",()=>goto("agents")]].map(([ic,lb,fn])=>(
+              <div key={lb} onClick={fn} style={{padding:"7px 10px",marginBottom:"1px",cursor:"pointer",fontFamily:"monospace",fontSize:"10px",color:T.mute,borderRadius:"5px",transition:"background 0.13s"}} onMouseEnter={e=>e.currentTarget.style.background=T.panel} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{ic} {lb}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main */}
+        <div style={{overflowY:"auto",padding:"18px 20px",background:T.bg}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"13px"}}>
+            <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mute,letterSpacing:"2px"}}>{ICONS[sec]} {sec.toUpperCase()}</div>
+            <button onClick={runAI} disabled={aiRunning||credits<=0} style={{display:"flex",alignItems:"center",gap:"6px",background:credits>0?`linear-gradient(135deg,${T.green},#10b981)`:"#f0f0f0",color:credits>0?"#fff":T.mute,border:"none",padding:"7px 12px",fontFamily:"monospace",fontSize:"10px",fontWeight:"bold",cursor:credits>0&&!aiRunning?"pointer":"not-allowed",borderRadius:"6px"}}>
+              {aiRunning?<><span style={{display:"inline-block",animation:"spin 1s linear infinite"}}>⟳</span> Optimising…</>:<>🤖 AI Optimise · {credits} credit{credits!==1?"s":""}</>}
+            </button>
+          </div>
+
+          {aiTips&&(
+            <div style={{background:T.greenBg,border:`1px solid ${T.greenBrd}`,borderRadius:"10px",padding:"13px 14px",marginBottom:"13px"}}>
+              <div style={{fontFamily:"monospace",fontSize:"10px",color:T.green,fontWeight:"bold",letterSpacing:"1px",marginBottom:"8px"}}>🤖 AI SUGGESTIONS</div>
+              {aiTips.map((s,i)=><div key={i} style={{display:"flex",gap:"9px",fontFamily:"Space Grotesk",fontSize:"13px",color:T.mid,marginBottom:"5px",lineHeight:"1.5"}}><span style={{color:T.green,flexShrink:0}}>✦</span>{s}</div>)}
+              <div style={{display:"flex",gap:"7px",marginTop:"9px"}}><Btn size="sm">Apply All</Btn><Btn v="ghost" size="sm" onClick={()=>setAiTips(null)}>Dismiss</Btn></div>
+            </div>
+          )}
+
+          {credits===0&&(
+            <div style={{background:T.purpleBg,border:`1px solid ${T.purpleBrd}`,borderRadius:"8px",padding:"10px 13px",marginBottom:"12px",display:"flex",gap:"10px",alignItems:"center"}}>
+              <span style={{fontSize:"17px"}}>🤖</span>
+              <div style={{flex:1}}><div style={{fontFamily:"monospace",fontSize:"11px",color:T.purple,fontWeight:"bold"}}>All 5 free credits used</div><div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,marginTop:"1px"}}>Upgrade to Pro for 20/month.</div></div>
+              <Btn size="sm" onClick={()=>goto("pricing")}>Upgrade — $15/mo</Btn>
+            </div>
+          )}
+
+          {renderSec()}
+        </div>
+
+        {/* Right panel */}
+        <div style={{borderLeft:`1px solid ${T.border}`,background:T.surface,padding:"14px 12px",overflowY:"auto"}}>
+          <SL>AI CAREER SCORE</SL>
+          <div style={{textAlign:"center",marginBottom:"13px"}}>
+            <div style={{fontFamily:"monospace",fontSize:"36px",fontWeight:"bold",color:T.gold}}>82</div>
+            <div style={{fontFamily:"monospace",fontSize:"9px",color:T.mute}}>/ 100</div>
+            <div style={{height:"6px",background:T.border,borderRadius:"3px",marginTop:"6px"}}><div style={{width:"82%",height:"100%",background:`linear-gradient(90deg,${T.gold},#f59e0b)`,borderRadius:"3px"}}/></div>
+          </div>
+          {[["Impact Language",88],["ATS Keywords",74],["Completeness",85],["Formatting",90]].map(([k,v])=>(
+            <div key={k} style={{marginBottom:"8px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontFamily:"monospace",fontSize:"9px",color:T.mute,marginBottom:"2px"}}><span>{k}</span><span style={{color:v>=80?T.green:T.gold}}>{v}%</span></div>
+              <div style={{height:"4px",background:T.border,borderRadius:"2px"}}><div style={{width:`${v}%`,height:"100%",background:v>=80?T.green:T.gold,borderRadius:"2px"}}/></div>
+            </div>
+          ))}
+
+          <div style={{marginTop:"13px",borderTop:`1px solid ${T.border}`,paddingTop:"12px"}}>
+            <SL>KNOWLEDGE EARNINGS</SL>
+            {[["UX Masterclass","187 sales","$7,633"],["Design Deck","312 sales","$5,928"]].map(([t,s,r])=>(
+              <div key={t} style={{marginBottom:"7px",padding:"8px 10px",background:T.goldBg,borderRadius:"7px",border:`1px solid ${T.goldBrd}`}}>
+                <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mid}}>{t}</div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:"2px"}}><span style={{fontFamily:"monospace",fontSize:"9px",color:T.mute}}>{s}</span><span style={{fontFamily:"monospace",fontSize:"13px",fontWeight:"bold",color:T.purple}}>{r}</span></div>
+              </div>
+            ))}
+            <div style={{background:`linear-gradient(135deg,${T.purple},#6d28d9)`,borderRadius:"7px",padding:"10px",textAlign:"center"}}>
+              <div style={{fontFamily:"monospace",fontSize:"9px",color:"#d4c6ff",marginBottom:"2px"}}>TOTAL THIS MONTH</div>
+              <div style={{fontFamily:"monospace",fontSize:"20px",fontWeight:"bold",color:"#fff"}}>$13,561</div>
+            </div>
+          </div>
+
+          <div style={{marginTop:"13px",borderTop:`1px solid ${T.border}`,paddingTop:"12px"}}>
+            <SL>VISIBILITY</SL>
+            {[["Recruiter views","48 this week"],["Job matches","12 active"],["Profile saves","7 recruiters"]].map(([k,v])=>(
+              <div key={k} style={{display:"flex",justifyContent:"space-between",fontFamily:"monospace",fontSize:"10px",color:T.mute,marginBottom:"6px",paddingBottom:"6px",borderBottom:`1px solid ${T.border}`}}><span>{k}</span><span style={{color:T.text,fontWeight:"bold"}}>{v}</span></div>
+            ))}
+            <Btn style={{width:"100%",marginTop:"4px"}} size="sm" onClick={()=>goto("pricing")}>⭐ Boost Profile — $9</Btn>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MARKETPLACE
+// ═══════════════════════════════════════════════════════════════════
+function Market({ goto }) {
+  const [filter, setFilter] = useState("All");
+  const [sort, setSort] = useState("popular");
+  const [cart, setCart] = useState([]);
+  const [bought, setBought] = useState([]);
+  const TYPES = ["All","Course","Template","eBook","Workshop","Lecture"];
+
+  const items = MARKET_ITEMS
+    .filter(i=>filter==="All"||i.type===filter)
+    .sort((a,b)=>sort==="popular"?b.students-a.students:sort==="low"?a.price-b.price:b.price-a.price);
+
+  const buy = id => { setBought(b=>[...b,id]); setCart(c=>c.filter(x=>x!==id)); };
+  const total = cart.reduce((s,id)=>s+(MARKET_ITEMS.find(i=>i.id===id)?.price||0),0);
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}`}</style>
+
+      <div style={{background:`linear-gradient(135deg,${T.dark},#1e2d45)`,padding:"32px 24px",textAlign:"center",color:"#e2e8f0"}}>
+        <div style={{fontFamily:"monospace",fontSize:"10px",color:"#334155",letterSpacing:"2px",marginBottom:"7px"}}>KNOWLEDGE MARKETPLACE</div>
+        <div style={{fontFamily:"'Playfair Display',serif",fontSize:"24px",fontWeight:"900",marginBottom:"7px"}}>Learn from world-class professionals</div>
+        <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:"#94a3b8",marginBottom:"14px"}}>Courses, templates, workshops & research by verified CVita professionals</div>
+        <div style={{display:"flex",gap:"20px",justifyContent:"center"}}>
+          {[["$134k","Knowledge sold"],["4.8★","Avg rating"],["6,200+","Learners"]].map(([v,l])=>(
+            <div key={l} style={{textAlign:"center"}}>
+              <div style={{fontFamily:"monospace",fontSize:"16px",fontWeight:"bold",color:"#60a5fa"}}>{v}</div>
+              <div style={{fontFamily:"monospace",fontSize:"10px",color:"#475569",marginTop:"1px"}}>{l}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{maxWidth:"1040px",margin:"0 auto",padding:"20px 22px"}}>
+        {cart.length>0&&(
+          <div style={{background:`linear-gradient(135deg,${T.purple},#6d28d9)`,borderRadius:"10px",padding:"11px 14px",marginBottom:"13px",display:"flex",alignItems:"center",gap:"12px"}}>
+            <span style={{fontFamily:"monospace",fontSize:"12px",color:"#fff",fontWeight:"bold"}}>🛒 {cart.length} item{cart.length>1?"s":""} — Total: ${total}</span>
+            <Btn size="sm" style={{marginLeft:"auto",background:"#fff",color:T.purple,border:"none"}} onClick={()=>{cart.forEach(buy);}}>Checkout & Pay →</Btn>
+            <span onClick={()=>setCart([])} style={{color:"#ffffff55",cursor:"pointer"}}>✕</span>
+          </div>
+        )}
+
+        <div style={{display:"flex",gap:"7px",alignItems:"center",marginBottom:"14px",flexWrap:"wrap"}}>
+          {TYPES.map(t=><div key={t} onClick={()=>setFilter(t)} style={{padding:"5px 12px",fontFamily:"monospace",fontSize:"10px",cursor:"pointer",borderRadius:"20px",background:filter===t?T.blue:T.surface,color:filter===t?"#fff":T.mute,border:`1px solid ${filter===t?T.blue:T.border}`,transition:"all 0.13s"}}>{t}</div>)}
+          <select value={sort} onChange={e=>setSort(e.target.value)} style={{marginLeft:"auto",background:T.surface,border:`1px solid ${T.border}`,color:T.mid,fontFamily:"monospace",fontSize:"11px",padding:"5px 9px",outline:"none",borderRadius:"7px"}}>
+            <option value="popular">Most Popular</option>
+            <option value="low">Price: Low–High</option>
+            <option value="high">Price: High–Low</option>
+          </select>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"13px"}}>
+          {items.map(item=>{
+            const inC = cart.includes(item.id);
+            const isBought = bought.includes(item.id);
+            return (
+              <div key={item.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:"13px",overflow:"hidden",transition:"box-shadow 0.2s"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 16px rgba(0,0,0,0.09)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
+                <div style={{height:"3px",background:`linear-gradient(90deg,${T.blue},#60a5fa)`}}/>
+                <div style={{padding:"14px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"9px"}}>
+                    <div style={{display:"flex",gap:"7px",alignItems:"center"}}>
+                      <div style={{width:"32px",height:"32px",borderRadius:"8px",background:T.blueBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px"}}>{item.icon}</div>
+                      <div>
+                        <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>{item.type}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:"4px",marginTop:"1px"}}>
+                          <div style={{width:"15px",height:"15px",borderRadius:"50%",background:item.avc+"22",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"monospace",fontSize:"7px",fontWeight:"bold",color:item.avc}}>{item.av}</div>
+                          <span style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>{item.author}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {item.badge&&<Badge label={item.badge} color={item.bc} bg={item.bc+"18"}/>}
+                  </div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:"14px",fontWeight:"700",color:T.text,marginBottom:"5px",lineHeight:"1.3"}}>{item.title}</div>
+                  <div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,lineHeight:"1.5",marginBottom:"8px",overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{item.desc}</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:"4px",marginBottom:"8px"}}>
+                    {item.tags.map(t=><span key={t} style={{fontFamily:"monospace",fontSize:"9px",background:T.panel,color:T.mute,padding:"2px 6px",borderRadius:"20px"}}>#{t}</span>)}
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"10px"}}>
+                    <span style={{fontFamily:"monospace",fontSize:"11px",color:T.gold}}>★ {item.rating}</span>
+                    <span style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>({item.reviews} · {item.students.toLocaleString()} students)</span>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div style={{fontFamily:"monospace",fontSize:"20px",fontWeight:"bold",color:T.text}}>${item.price}</div>
+                    {isBought
+                      ? <Badge label="✓ Purchased" color={T.green} bg={T.greenBg}/>
+                      : <div style={{display:"flex",gap:"5px"}}>
+                          <Btn v="ghost" size="sm" onClick={()=>setCart(c=>inC?c.filter(x=>x!==item.id):[...c,item.id])} style={{color:inC?T.green:T.mid,borderColor:inC?T.greenBrd:T.border}}>{inC?"✓ In Cart":"+ Cart"}</Btn>
+                          <Btn size="sm" onClick={()=>buy(item.id)}>Buy Now</Btn>
+                        </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{marginTop:"26px",background:`linear-gradient(135deg,${T.dark},#1e2d45)`,borderRadius:"13px",padding:"22px",textAlign:"center",color:"#e2e8f0"}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"19px",fontWeight:"900",marginBottom:"6px"}}>Have knowledge to share?</div>
+          <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:"#94a3b8",marginBottom:"14px"}}>Publish your course, template, or research. Keep 85–92% of every sale, paid out weekly.</div>
+          <Btn onClick={()=>goto("dashboard")}>Start Selling →</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// JOB BOARD
+// ═══════════════════════════════════════════════════════════════════
+function JobBoard({ goto }) {
+  const [filter, setFilter] = useState("All");
+  const [applied, setApplied] = useState([]);
+  const [saved, setSaved] = useState([]);
+  const userTags = ["ProductDesign","UXDesign","DesignSystems","Figma","AI","RemoteWork"];
+  const filtered = JOBS.filter(j=>filter==="All"||j.type===filter);
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}`}</style>
+
+      <div style={{background:`linear-gradient(135deg,${T.dark},#1a2640)`,padding:"30px 24px",color:"#e2e8f0"}}>
+        <div style={{maxWidth:"940px",margin:"0 auto"}}>
+          <div style={{fontFamily:"monospace",fontSize:"10px",color:"#334155",letterSpacing:"2px",marginBottom:"7px"}}>JOB BOARD</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:"900",marginBottom:"7px"}}>Jobs matched to your hashtags</div>
+          <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:"#94a3b8",marginBottom:"10px"}}>
+            Your tags: {userTags.map(t=><span key={t} style={{fontFamily:"monospace",fontSize:"11px",background:"#1d3a6e",color:"#60a5fa",padding:"2px 8px",borderRadius:"20px",marginRight:"4px"}}>#{t}</span>)}
+          </div>
+          <div style={{display:"flex",gap:"16px"}}>{[["6","Matched"],["96%","Top match"],["3","Urgent"]].map(([v,l])=>(
+            <div key={l} style={{fontFamily:"monospace",fontSize:"11px",color:"#94a3b8"}}><span style={{color:"#60a5fa",fontWeight:"bold",fontSize:"16px"}}>{v}</span> {l}</div>
+          ))}</div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:"940px",margin:"0 auto",padding:"20px 22px"}}>
+        <div style={{display:"flex",gap:"7px",marginBottom:"14px",flexWrap:"wrap",alignItems:"center"}}>
+          {["All","Full-time","Remote","Hybrid"].map(t=><div key={t} onClick={()=>setFilter(t)} style={{padding:"5px 12px",fontFamily:"monospace",fontSize:"10px",cursor:"pointer",borderRadius:"20px",background:filter===t?T.blue:T.surface,color:filter===t?"#fff":T.mute,border:`1px solid ${filter===t?T.blue:T.border}`,transition:"all 0.13s"}}>{t}</div>)}
+          <div style={{marginLeft:"auto",fontFamily:"monospace",fontSize:"11px",color:T.mute}}>{filtered.length} jobs</div>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+          {filtered.map(job=>{
+            const isApplied = applied.includes(job.id);
+            const isSaved   = saved.includes(job.id);
+            const mc = job.match>=90?T.green:job.match>=80?T.blue:T.gold;
+            return (
+              <div key={job.id} style={{background:T.surface,border:`1px solid ${job.urgent?T.red+"44":T.border}`,borderRadius:"12px",padding:"15px",transition:"box-shadow 0.18s"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.08)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="none"}>
+                <div style={{display:"flex",gap:"12px",alignItems:"flex-start"}}>
+                  <div style={{width:"44px",height:"44px",borderRadius:"11px",background:T.panel,border:`1px solid ${T.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"19px",flexShrink:0}}>{job.logo}</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",gap:"7px",alignItems:"center",flexWrap:"wrap",marginBottom:"3px"}}>
+                      <div style={{fontFamily:"'Playfair Display',serif",fontSize:"15px",fontWeight:"700",color:T.text}}>{job.role}</div>
+                      {job.urgent&&<Badge label="🔥 Urgent" color={T.red} bg={T.redBg}/>}
+                    </div>
+                    <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mid,marginBottom:"6px"}}>{job.co} · {job.loc} · {job.type}</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:"5px",marginBottom:"7px"}}>
+                      {job.tags.map(t=>{const m=userTags.includes(t);return <span key={t} style={{fontFamily:"monospace",fontSize:"10px",color:m?T.blue:T.mute,background:m?T.blueBg:T.panel,border:`1px solid ${m?T.blueBrd:T.border}`,padding:"2px 8px",borderRadius:"20px",fontWeight:m?"bold":"normal"}}>#{t}{m?" ✓":""}</span>;})}
+                    </div>
+                    <div style={{display:"flex",gap:"10px",alignItems:"center"}}>
+                      <span style={{fontFamily:"monospace",fontSize:"12px",color:T.green,fontWeight:"bold"}}>{job.salary}</span>
+                      <span style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>{job.apps} applicants · {job.posted}</span>
+                    </div>
+                  </div>
+                  <div style={{flexShrink:0,display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"7px"}}>
+                    <div style={{textAlign:"center",background:mc+"15",border:`1px solid ${mc}33`,borderRadius:"8px",padding:"5px 9px"}}>
+                      <div style={{fontFamily:"monospace",fontSize:"16px",fontWeight:"900",color:mc,lineHeight:1}}>{job.match}%</div>
+                      <div style={{fontFamily:"monospace",fontSize:"8px",color:T.mute,marginTop:"1px"}}>MATCH</div>
+                    </div>
+                    <div style={{display:"flex",gap:"5px"}}>
+                      <button onClick={()=>setSaved(s=>isSaved?s.filter(x=>x!==job.id):[...s,job.id])} style={{background:isSaved?T.goldBg:T.bg,color:isSaved?T.gold:T.mute,border:`1px solid ${isSaved?T.goldBrd:T.border}`,padding:"5px 9px",fontFamily:"monospace",fontSize:"10px",cursor:"pointer",borderRadius:"6px"}}>{isSaved?"⭐":"☆"}</button>
+                      <button onClick={()=>!isApplied&&setApplied(a=>[...a,job.id])} style={{background:isApplied?T.greenBg:`linear-gradient(135deg,${T.blue},#3b82f6)`,color:isApplied?T.green:"#fff",border:isApplied?`1px solid ${T.greenBrd}`:"none",padding:"5px 13px",fontFamily:"monospace",fontSize:"10px",fontWeight:"bold",cursor:"pointer",borderRadius:"6px"}}>{isApplied?"✓ Applied":"Apply Now"}</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{marginTop:"22px",background:`linear-gradient(135deg,#0f1628,#1e2d45)`,borderRadius:"12px",padding:"18px 20px",display:"flex",gap:"13px",alignItems:"center",color:"#e2e8f0"}}>
+          <span style={{fontSize:"24px"}}>💼</span>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"15px",fontWeight:"700",marginBottom:"2px"}}>Are you hiring?</div>
+            <div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:"#94a3b8"}}>Post a job and get matched to hashtag-tagged candidates. Starting $99/mo.</div>
+          </div>
+          <Btn v="dark" onClick={()=>goto("recruiter")}>Post a Job →</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RECRUITER PORTAL
+// ═══════════════════════════════════════════════════════════════════
+function Recruiter({ goto }) {
+  const [unlocked, setUnlocked] = useState([]);
+  const [credits, setCredits] = useState(3);
+  const [filterTags, setFilterTags] = useState([]);
+  const [saved, setSaved] = useState([]);
+  const [stage, setStage] = useState({});
+  const TAGS = ["#OpenToWork","#React","#ProductDesign","#AI","#RemoteWork","#FinTech","#Python","#UXDesign","#DataScience","#FullStack"];
+  const STAGES = ["Shortlisted","Outreached","Interviewed","Offer Sent","Hired"];
+
+  const toggle = t => { const c=t.replace(/^#/,""); setFilterTags(s=>s.includes(c)?s.filter(x=>x!==c):[...s,c]); };
+  const filtered = filterTags.length===0?CANDIDATES:CANDIDATES.filter(c=>filterTags.every(t=>c.tags.map(x=>x.toLowerCase()).includes(t.toLowerCase())));
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}`}</style>
+
+      <div style={{background:`linear-gradient(135deg,${T.dark},#1c2d45)`,padding:"10px 18px",display:"flex",gap:"12px",alignItems:"center",position:"sticky",top:"52px",zIndex:40}}>
+        <span style={{fontFamily:"monospace",fontSize:"11px",color:"#94a3b8"}}>🔍 RECRUITER PORTAL · Starter Plan</span>
+        <span style={{fontFamily:"monospace",fontSize:"11px",color:credits>0?T.gold:T.red,background:credits>0?"#2a1e04":"#2a0a0a",padding:"3px 9px",borderRadius:"20px",border:`1px solid ${credits>0?T.gold+"44":T.red+"44"}`}}>{credits} unlock{credits!==1?"s":""} left</span>
+        <Btn v="dark" size="sm" style={{marginLeft:"auto"}} onClick={()=>goto("pricing")}>Upgrade Plan →</Btn>
+      </div>
+
+      <div style={{padding:"18px 20px",maxWidth:"940px",margin:"0 auto"}}>
+        <Card style={{marginBottom:"13px"}}>
+          <div style={{fontFamily:"monospace",fontSize:"10px",color:T.blue,fontWeight:"bold",letterSpacing:"1px",marginBottom:"7px"}}>🏷 SEARCH CANDIDATES BY HASHTAG</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:"6px",marginBottom:filterTags.length>0?"8px":"0"}}>
+            {TAGS.map(t=>{const c=t.replace(/^#/,"");const a=filterTags.includes(c);return(
+              <span key={t} onClick={()=>toggle(t)} style={{fontFamily:"monospace",fontSize:"11px",color:a?T.blue:T.mid,background:a?T.blueBg:T.bg,border:`1px solid ${a?T.blueBrd:T.border}`,padding:"4px 11px",borderRadius:"20px",cursor:"pointer",transition:"all 0.13s"}}>{t}</span>
+            );})}
+          </div>
+          {filterTags.length>0&&<div style={{fontFamily:"monospace",fontSize:"10px",color:T.blue}}>Showing: {filterTags.map(t=>"#"+t).join(", ")} — <span onClick={()=>setFilterTags([])} style={{cursor:"pointer",color:T.red}}>Clear ✕</span></div>}
+        </Card>
+
+        <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mute,marginBottom:"10px"}}><span style={{color:T.text,fontWeight:"bold"}}>{filtered.length}</span> candidates found</div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(265px,1fr))",gap:"11px"}}>
+          {filtered.map(c=>{
+            const locked = !unlocked.includes(c.id);
+            const isSaved = saved.includes(c.id);
+            const mc = c.match>=90?T.green:T.blue;
+            return (
+              <div key={c.id} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:"12px",overflow:"hidden"}}>
+                <div style={{height:"3px",background:`linear-gradient(90deg,${c.col},${c.col}66)`}}/>
+                <div style={{padding:"12px"}}>
+                  <div style={{display:"flex",gap:"9px",alignItems:"flex-start",marginBottom:"8px"}}>
+                    <div style={{width:"34px",height:"34px",borderRadius:"50%",background:c.col+"22",border:`2px solid ${c.col}44`,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",color:c.col,flexShrink:0}}>{c.av}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:"Space Grotesk",fontWeight:"700",color:T.text,fontSize:"13px"}}>{c.name}</div>
+                      <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mid}}>{c.title}</div>
+                      <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mute}}>📍 {c.loc}</div>
+                    </div>
+                    <div style={{textAlign:"center",background:mc+"15",border:`1px solid ${mc}33`,borderRadius:"7px",padding:"4px 7px",flexShrink:0}}>
+                      <div style={{fontFamily:"monospace",fontSize:"14px",fontWeight:"900",color:mc,lineHeight:1}}>{c.match}%</div>
+                      <div style={{fontFamily:"monospace",fontSize:"8px",color:T.mute}}>MATCH</div>
+                    </div>
+                  </div>
+
+                  <div style={{display:"flex",gap:"5px",marginBottom:"7px",flexWrap:"wrap"}}>
+                    <Badge label={c.status} color={c.status.includes("🟢")?T.green:T.blue} bg={c.status.includes("🟢")?T.greenBg:T.blueBg}/>
+                    <span style={{fontFamily:"monospace",fontSize:"10px",color:T.mute,background:T.panel,padding:"2px 7px",borderRadius:"20px"}}>{c.exp} exp</span>
+                  </div>
+
+                  <div style={{display:"flex",flexWrap:"wrap",gap:"4px",marginBottom:"9px"}}>
+                    {c.tags.slice(0,5).map(t=><span key={t} style={{fontFamily:"monospace",fontSize:"9px",color:T.mute,background:T.panel,border:`1px solid ${T.border}`,padding:"2px 6px",borderRadius:"20px"}}>#{t}</span>)}
+                  </div>
+
+                  <select value={stage[c.id]||""} onChange={e=>setStage(s=>({...s,[c.id]:e.target.value}))} style={{width:"100%",background:stage[c.id]?T.blueBg:T.bg,border:`1px solid ${stage[c.id]?T.blueBrd:T.border}`,color:stage[c.id]?T.blue:T.mute,fontFamily:"monospace",fontSize:"10px",padding:"5px 7px",outline:"none",borderRadius:"6px",marginBottom:"8px"}}>
+                    <option value="">No stage</option>
+                    {STAGES.map(s=><option key={s} value={s}>{s}</option>)}
+                  </select>
+
+                  {locked ? (
+                    <div style={{background:T.purpleBg,border:`1px solid ${T.purpleBrd}`,borderRadius:"8px",padding:"10px",textAlign:"center"}}>
+                      <div style={{fontFamily:"monospace",fontSize:"10px",color:T.purple,marginBottom:"4px"}}>🔒 Contact locked</div>
+                      <div style={{fontFamily:"Space Grotesk",fontSize:"11px",color:T.mid,marginBottom:"7px"}}>Unlock email + LinkedIn — uses 1 credit</div>
+                      <button onClick={()=>{if(credits>0){setCredits(n=>n-1);setUnlocked(u=>[...u,c.id]);}}} disabled={credits<=0} style={{width:"100%",background:credits>0?`linear-gradient(135deg,${T.purple},#6d28d9)`:"#e0e0e0",color:credits>0?"#fff":T.mute,border:"none",padding:"8px",fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",cursor:credits>0?"pointer":"not-allowed",borderRadius:"6px"}}>
+                        {credits>0?"🔓 Unlock — 1 Credit":"No credits — Upgrade"}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{background:T.greenBg,border:`1px solid ${T.greenBrd}`,borderRadius:"8px",padding:"9px"}}>
+                      <div style={{fontFamily:"monospace",fontSize:"10px",color:T.green,marginBottom:"4px"}}>✓ Unlocked</div>
+                      <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mid,marginBottom:"2px"}}>📧 {c.name.toLowerCase().replace(" ",".")}@email.com</div>
+                      <div style={{fontFamily:"monospace",fontSize:"11px",color:T.mid,marginBottom:"8px"}}>💼 linkedin.com/in/{c.name.toLowerCase().replace(" ","-")}</div>
+                      <Btn size="sm" style={{width:"100%"}}>✉ Send Message</Btn>
+                    </div>
+                  )}
+
+                  <button onClick={()=>setSaved(s=>isSaved?s.filter(x=>x!==c.id):[...s,c.id])} style={{width:"100%",background:isSaved?T.goldBg:"transparent",color:isSaved?T.gold:T.mute,border:`1px solid ${isSaved?T.goldBrd:T.border}`,padding:"6px",fontFamily:"monospace",fontSize:"10px",cursor:"pointer",borderRadius:"6px",marginTop:"6px"}}>
+                    {isSaved?"⭐ Saved":"☆ Save Candidate"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AI AGENTS
+// ═══════════════════════════════════════════════════════════════════
+function Agents({ goto }) {
+  const [running, setRunning] = useState(null);
+  const [results, setResults] = useState({});
+  const [credits, setCredits] = useState(5);
+  const [cat, setCat] = useState("All");
+
+  const AGENTS = [
+    {id:"cv",      icon:"✍️",name:"CV Optimizer",         color:T.blue,   cat:"Career",    desc:"Rewrites your bullets with stronger verbs and ATS keywords to boost your recruiter match rate instantly."},
+    {id:"hashtag", icon:"🏷",name:"Hashtag Scout",         color:T.teal,   cat:"Career",    desc:"Finds the exact hashtags recruiters are actively searching for your skills right now."},
+    {id:"price",   icon:"💰",name:"Knowledge Pricer",      color:T.gold,   cat:"Earnings",  desc:"Researches Udemy, Coursera & Gumroad to find the optimal price for your courses and content."},
+    {id:"patent",  icon:"⚖️",name:"Patent Drafter",        color:T.purple, cat:"IP",        desc:"Drafts a full patent abstract and independent claims ready to share with your patent attorney."},
+    {id:"outreach",icon:"✉️",name:"Recruiter Outreach",    color:T.green,  cat:"Recruiting",desc:"Writes a highly personalized message for each candidate referencing their specific hashtags and achievements."},
+    {id:"roadmap", icon:"🗺",name:"Career Path Agent",      color:"#ec4899",cat:"Career",    desc:"Maps your 3-year career roadmap with quarterly milestones and specific next actions for this week."},
+  ];
+
+  const filtered = AGENTS.filter(a=>cat==="All"||a.cat===cat);
+
+  const run = async (a) => {
+    if(credits<=0||running) return;
+    setRunning(a.id); setCredits(c=>c-1);
+    await new Promise(r=>setTimeout(r,2300));
+    setResults(r=>({...r,[a.id]:AI_RESULTS[a.id]||"Agent completed successfully."}));
+    setRunning(null);
+  };
+
+  return (
+    <div style={{background:T.bg,minHeight:"100vh",fontFamily:"Georgia,serif"}}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;700&display=swap');*{box-sizing:border-box;}@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+
+      <div style={{background:T.dark,padding:"9px 18px",display:"flex",alignItems:"center",gap:"11px",position:"sticky",top:"52px",zIndex:40}}>
+        <span style={{fontFamily:"monospace",fontSize:"11px",color:"#94a3b8"}}>🤖 AI AGENT HUB</span>
+        <span style={{fontFamily:"monospace",fontSize:"11px",color:credits>0?T.gold:T.red,background:credits>0?"#2a1e04":"#2a0a0a",padding:"3px 9px",borderRadius:"20px",border:`1px solid ${credits>0?T.gold+"44":T.red+"44"}`}}>{credits} credit{credits!==1?"s":""} left</span>
+        <span style={{fontFamily:"monospace",fontSize:"10px",color:"#334155",marginLeft:"auto"}}>Free 2/mo · Pro 20/mo · Creator 50/mo</span>
+        {credits<=2&&<Btn v="dark" size="sm" onClick={()=>goto("pricing")}>Get More Credits</Btn>}
+      </div>
+
+      <div style={{maxWidth:"960px",margin:"0 auto",padding:"22px"}}>
+        <div style={{textAlign:"center",marginBottom:"22px"}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"22px",fontWeight:"900",color:T.text,marginBottom:"5px"}}>Autonomous AI Agents</div>
+          <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:T.mid}}>Each agent reads your full profile and takes real action — not just advice. Powered by Claude.</div>
+        </div>
+
+        <div style={{display:"flex",gap:"6px",justifyContent:"center",marginBottom:"18px"}}>
+          {["All","Career","Earnings","IP","Recruiting"].map(c=><div key={c} onClick={()=>setCat(c)} style={{padding:"5px 12px",fontFamily:"monospace",fontSize:"10px",cursor:"pointer",borderRadius:"20px",background:cat===c?T.dark:T.surface,color:cat===c?"#e2e8f0":T.mute,border:`1px solid ${cat===c?"#2d4060":T.border}`,transition:"all 0.13s"}}>{c}</div>)}
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(275px,1fr))",gap:"12px"}}>
+          {filtered.map(a=>{
+            const isRunning = running===a.id;
+            const hasResult = !!results[a.id];
+            return (
+              <div key={a.id} style={{background:T.surface,border:`1px solid ${hasResult?a.color+"55":T.border}`,borderRadius:"12px",overflow:"hidden",boxShadow:hasResult?`0 2px 12px ${a.color}18`:"none",transition:"all 0.2s"}}>
+                <div style={{height:"3px",background:`linear-gradient(90deg,${a.color},${a.color}66)`}}/>
+                <div style={{padding:"14px"}}>
+                  <div style={{display:"flex",gap:"9px",alignItems:"flex-start",marginBottom:"9px"}}>
+                    <div style={{width:"36px",height:"36px",borderRadius:"9px",background:a.color+"15",border:`1px solid ${a.color}33`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"16px",flexShrink:0}}>{a.icon}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontFamily:"monospace",fontSize:"12px",fontWeight:"bold",color:T.text}}>{a.name}</div>
+                      <span style={{fontFamily:"monospace",fontSize:"9px",color:a.color,background:a.color+"12",padding:"2px 6px",borderRadius:"20px",display:"inline-block",marginTop:"2px"}}>{a.cat}</span>
+                    </div>
+                  </div>
+                  <div style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,lineHeight:"1.5",marginBottom:"9px"}}>{a.desc}</div>
+
+                  {hasResult&&(
+                    <div style={{background:a.color+"08",border:`1px solid ${a.color}33`,borderRadius:"8px",padding:"9px",marginBottom:"9px",maxHeight:"110px",overflowY:"auto"}}>
+                      <div style={{fontFamily:"monospace",fontSize:"9px",color:a.color,fontWeight:"bold",marginBottom:"4px"}}>✓ AGENT RESULT</div>
+                      <div style={{fontFamily:"monospace",fontSize:"10px",color:T.mid,lineHeight:"1.7",whiteSpace:"pre-line"}}>{results[a.id]}</div>
+                    </div>
+                  )}
+
+                  <button onClick={()=>run(a)} disabled={!!running||credits<=0} style={{width:"100%",padding:"9px",fontFamily:"monospace",fontSize:"11px",fontWeight:"bold",cursor:(running||credits<=0)?"not-allowed":"pointer",borderRadius:"7px",border:"none",background:hasResult?T.greenBg:credits<=0?"#f0f0f0":isRunning?a.color+"44":`linear-gradient(135deg,${a.color},${a.color}cc)`,color:hasResult?T.green:credits<=0?T.mute:"#fff",transition:"all 0.2s"}}>
+                    {hasResult?"✓ Run Again":isRunning?<span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"7px"}}><span style={{display:"inline-block",animation:"spin 1s linear infinite"}}>⟳</span>Running…</span>:credits<=0?"No Credits Left":"▶ Run Agent"}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {credits===0&&(
+          <div style={{marginTop:"18px",background:T.purpleBg,border:`1px solid ${T.purpleBrd}`,borderRadius:"12px",padding:"20px",textAlign:"center"}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"17px",fontWeight:"700",color:T.text,marginBottom:"5px"}}>All 5 free credits used</div>
+            <div style={{fontFamily:"Space Grotesk",fontSize:"13px",color:T.mid,marginBottom:"14px"}}>Upgrade to Pro for 20/month, Creator for 50/month, or buy a one-time credit pack.</div>
+            <div style={{display:"flex",gap:"9px",justifyContent:"center",flexWrap:"wrap"}}>
+              <Btn onClick={()=>goto("pricing")}>Upgrade to Pro — $15/mo</Btn>
+              <Btn v="ghost">Buy 10 credits — $4</Btn>
+            </div>
+          </div>
+        )}
+
+        <Card style={{marginTop:"20px"}}>
+          <SL>AGENTIC AI vs REGULAR CHATBOT</SL>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"11px"}}>
+            <div style={{background:T.redBg,border:`1px solid ${T.redBrd}`,borderRadius:"8px",padding:"12px"}}>
+              <div style={{fontFamily:"monospace",fontSize:"11px",color:T.red,fontWeight:"bold",marginBottom:"7px"}}>💬 Regular Chatbot</div>
+              {["You type a prompt","Responds once","Generic advice","No context about you","You do all the work"].map(s=><div key={s} style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,padding:"3px 0",borderBottom:`1px solid ${T.border}`}}>✗ {s}</div>)}
+            </div>
+            <div style={{background:T.greenBg,border:`1px solid ${T.greenBrd}`,borderRadius:"8px",padding:"12px"}}>
+              <div style={{fontFamily:"monospace",fontSize:"11px",color:T.green,fontWeight:"bold",marginBottom:"7px"}}>🤖 CVita AI Agent</div>
+              {["You set a goal","Multi-step execution","Specific to your profile","Reads all 10 CV sections","Agent does the work"].map(s=><div key={s} style={{fontFamily:"Space Grotesk",fontSize:"12px",color:T.mid,padding:"3px 0",borderBottom:`1px solid ${T.border}`}}>✓ {s}</div>)}
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ROOT APP
+// ═══════════════════════════════════════════════════════════════════
+function CVitaApp() {
+  const [page, setPage] = useState("landing");
+
+  const NAV = [
+    {id:"landing",   label:"🏠 Home"},
+    {id:"dashboard", label:"👤 Dashboard"},
+    {id:"market",    label:"🛒 Marketplace"},
+    {id:"jobs",      label:"💼 Jobs"},
+    {id:"recruiter", label:"🔍 Recruiter"},
+    {id:"agents",    label:"🤖 AI Agents"},
+    {id:"pricing",   label:"💳 Pricing"},
+  ];
+
+  return (
+    <div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+        *{box-sizing:border-box;}
+        ::-webkit-scrollbar{width:5px;}
+        ::-webkit-scrollbar-track{background:#0a0f1e;}
+        ::-webkit-scrollbar-thumb{background:#1c2d45;border-radius:3px;}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+      `}</style>
+
+      {/* GLOBAL NAV */}
+      <div style={{position:"sticky",top:0,zIndex:200,background:"rgba(10,15,30,0.97)",backdropFilter:"blur(14px)",borderBottom:"1px solid #1c2d45",display:"flex",alignItems:"center",gap:"3px",padding:"0 12px",height:"52px",overflowX:"auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"6px",marginRight:"8px",cursor:"pointer",flexShrink:0}} onClick={()=>setPage("landing")}>
+          <div style={{width:"20px",height:"20px",background:`linear-gradient(135deg,#2563eb,#60a5fa)`,clipPath:"polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)"}}/>
+          <span style={{fontFamily:"'Playfair Display',serif",fontSize:"15px",fontWeight:"900",color:"#e2e8f0",whiteSpace:"nowrap"}}>CV<span style={{color:"#60a5fa"}}>ita</span></span>
+        </div>
+
+        {NAV.map(n=>(
+          <button key={n.id} onClick={()=>setPage(n.id)} style={{background:page===n.id?"#1d3a6e":"transparent",border:`1px solid ${page===n.id?"#2563eb55":"transparent"}`,color:page===n.id?"#60a5fa":"#5a7090",padding:"5px 11px",fontFamily:"monospace",fontSize:"11px",fontWeight:page===n.id?"bold":"normal",cursor:"pointer",borderRadius:"6px",transition:"all 0.15s",whiteSpace:"nowrap",flexShrink:0}}
+            onMouseEnter={e=>{if(page!==n.id){e.target.style.color="#8a9bbf";e.target.style.background="#0f1628";}}}
+            onMouseLeave={e=>{if(page!==n.id){e.target.style.color="#5a7090";e.target.style.background="transparent";}}}>
+            {n.label}
+          </button>
+        ))}
+
+        <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:"5px",flexShrink:0}}>
+          <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#059669",boxShadow:"0 0 6px #059669"}}/>
+          <span style={{fontFamily:"monospace",fontSize:"9px",color:"#334155"}}>LIVE</span>
+        </div>
+      </div>
+
+      {/* PAGES */}
+      <div key={page} style={{animation:"fadeIn 0.2s ease"}}>
+        {page==="landing"   && <Landing   goto={setPage}/>}
+        {page==="pricing"   && <Pricing   goto={setPage}/>}
+        {page==="dashboard" && <Dashboard goto={setPage}/>}
+        {page==="market"    && <Market    goto={setPage}/>}
+        {page==="jobs"      && <JobBoard  goto={setPage}/>}
+        {page==="recruiter" && <Recruiter goto={setPage}/>}
+        {page==="agents"    && <Agents    goto={setPage}/>}
+      </div>
+    </div>
+  );
+}
+
+
+    // Mount the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(CVitaApp));
+  </script>
+</body>
+</html>
