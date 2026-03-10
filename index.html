@@ -1,64 +1,953 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CVita – Your Professional Story</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CVita — The Living Career Story Platform</title>
 <style>
-body {margin:0;font-family:'Inter', sans-serif;color:#333;background:#f9f9f9;}
-header {background:#2a4365;color:#fff;padding:40px 20px;text-align:center;}
-header h1 {margin:0;font-size:2rem;}
-main {max-width:800px;margin:40px auto;padding:0 20px;}
-section {margin-bottom:40px;}
-h2 {color:#2a4365;margin-bottom:15px;}
-p {line-height:1.6;margin-bottom:20px;}
-.features {display:flex;flex-direction:column;gap:20px;}
-.features div {background:#fff;padding:20px;border:1px solid #e2e8f0;border-radius:8px;}
-.cta {text-align:center;margin-top:20px;}
-.cta a {background:#2a4365;color:#fff;padding:12px 24px;border-radius:4px;text-decoration:none;font-weight:600;}
-footer {background:#2a4365;color:#fff;text-align:center;padding:20px;font-size:0.875rem;}
-@media(min-width:600px){.features{flex-direction:row;}}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0f1c;--surf:#111827;--card:#161e2e;--brd:#1f2d42;--brd2:#2a3f5a;
+  --txt:#f0f4ff;--mid:#8899bb;--mute:#3d5070;
+  --blue:#3b82f6;--bluedark:#1d4ed8;--bluebg:#0f1f3d;
+  --gold:#f59e0b;--goldbg:#1c1200;
+  --green:#10b981;--greenbg:#052e1a;
+  --purple:#8b5cf6;--purpledark:#6d28d9;--purplebg:#1a0f35;
+  --red:#ef4444;--redbg:#2a0a0a;
+  --teal:#06b6d4;--orange:#f97316;
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'DM Mono',monospace;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px #3b82f633}50%{box-shadow:0 0 40px #3b82f666}}
+.page{animation:fadeUp .25s ease;min-height:calc(100vh - 54px)}
+/* NAV */
+#nav{position:sticky;top:0;z-index:100;background:rgba(11,15,28,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--brd);height:54px;display:flex;align-items:center;padding:0 20px;gap:6px}
+.logo{display:flex;align-items:center;gap:8px;cursor:pointer;margin-right:10px;text-decoration:none}
+.logo-hex{width:26px;height:26px;background:linear-gradient(135deg,var(--blue),var(--purple));clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
+.logo-text{font-family:'Playfair Display',serif;font-size:17px;font-weight:900;color:var(--txt)}
+.logo-text span{color:var(--blue)}
+.nav-btn{background:transparent;border:1px solid transparent;color:var(--mid);padding:5px 11px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;border-radius:7px;white-space:nowrap;transition:all .15s}
+.nav-btn:hover{background:var(--card);color:var(--txt)}
+.nav-btn.active{background:var(--bluebg);border-color:#3b82f655;color:var(--blue);font-weight:700}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;margin-left:auto;flex-shrink:0}
+/* SHARED */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:'DM Mono',monospace;font-weight:700;cursor:pointer;border-radius:8px;border:none;transition:all .15s;text-decoration:none}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--bluedark));color:#fff;box-shadow:0 4px 14px #3b82f644;padding:10px 22px;font-size:12px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px #3b82f655}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#d97706);color:#fff;padding:10px 22px;font-size:12px}
+.btn-ghost{background:transparent;color:var(--mid);border:1px solid var(--brd2);padding:8px 18px;font-size:11px}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:6px 14px;font-size:10px}
+.btn-purple{background:linear-gradient(135deg,var(--purple),var(--purpledark));color:#fff;padding:10px 22px;font-size:12px}
+.btn-danger{background:var(--redbg);color:var(--red);border:1px solid #ef444444;padding:8px 16px;font-size:11px}
+.btn-full{width:100%}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:18px}
+.card-hover{transition:all .2s;cursor:pointer}
+.card-hover:hover{border-color:var(--blue);box-shadow:0 4px 20px #3b82f618}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.section-label{font-size:9px;color:var(--mute);letter-spacing:2px;margin-bottom:10px}
+.bar-wrap{height:4px;background:var(--brd);border-radius:2px;overflow:hidden;margin-top:3px}
+.bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.tag-chip{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid;cursor:pointer;transition:all .13s}
+h1,h2,h3{font-family:'Playfair Display',serif}
+/* GRID HELPERS */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+/* TOPBAR (sub-nav) */
+.topbar{background:var(--surf);border-bottom:1px solid var(--brd);padding:0 20px;height:48px;display:flex;align-items:center;gap:12px;position:sticky;top:54px;z-index:40}
+/* SIDEBAR LAYOUT */
+.sidebar-layout{display:grid;grid-template-columns:185px 1fr 250px;height:calc(100vh - 102px);overflow:hidden}
+.sidebar{border-right:1px solid var(--brd);background:var(--surf);padding:10px 8px;overflow-y:auto}
+.main-panel{overflow-y:auto;padding:20px 22px;background:var(--bg)}
+.right-panel{border-left:1px solid var(--brd);background:var(--surf);padding:14px;overflow-y:auto}
+.sidebar-item{padding:8px 11px;margin-bottom:2px;cursor:pointer;border-radius:7px;border-left:2px solid transparent;display:flex;justify-content:space-between;align-items:center;transition:all .13s;font-size:11px;color:var(--mute)}
+.sidebar-item:hover{background:var(--card);color:var(--txt)}
+.sidebar-item.active{background:var(--bluebg);color:var(--blue);border-left-color:var(--blue);font-weight:700}
+/* TOOLTIPS / ALERTS */
+.alert{border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:center;font-size:12px}
+.alert-green{background:var(--greenbg);border:1px solid #10b98144;color:var(--green)}
+.alert-purple{background:var(--purplebg);border:1px solid #8b5cf644;color:var(--purple)}
+.alert-gold{background:var(--goldbg);border:1px solid #f59e0b44;color:var(--gold)}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center}
+#modal-overlay.open{display:flex}
+#modal-box{background:var(--surf);border:1px solid var(--brd2);border-radius:16px;padding:28px;max-width:480px;width:90%;animation:fadeUp .2s ease}
 </style>
 </head>
 <body>
-<header>
-<h1>CVita: Showcase Your Professional Story</h1>
-<p>Create a modern, shareable CV and portfolio.</p>
-</header>
-<main>
-<section>
-<h2>About CVita</h2>
-<p>CVita is a simple way to build and share your professional profile online. Instead of mixing marketing hype with AI jargon, we focus on giving you the tools to present your career story clearly and professionally.</p>
-<p>Whether you’re seeking a job or networking, CVita lets you:</p>
-</section>
-<section>
-<h2>What You Can Do</h2>
-<div class="features">
-<div>
-<h3>Create & Update Your CV</h3>
-<p>Build a clean résumé with your education, experience and skills. Update it anytime and share a live link instead of sending PDFs.</p>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="logo" onclick="goto('landing')">
+    <div class="logo-hex"></div>
+    <div class="logo-text">CV<span>ita</span></div>
+  </div>
+  <button class="nav-btn active" id="nav-landing"   onclick="goto('landing')">🏠 Home</button>
+  <button class="nav-btn"        id="nav-dashboard" onclick="goto('dashboard')">👤 Dashboard</button>
+  <button class="nav-btn"        id="nav-market"    onclick="goto('market')">🛒 Market</button>
+  <button class="nav-btn"        id="nav-jobs"      onclick="goto('jobs')">💼 Jobs</button>
+  <button class="nav-btn"        id="nav-recruiter" onclick="goto('recruiter')">🔍 Recruiter</button>
+  <button class="nav-btn"        id="nav-agents"    onclick="goto('agents')">🤖 AI Agents</button>
+  <button class="nav-btn"        id="nav-pricing"   onclick="goto('pricing')">💰 Pricing</button>
+  <div class="live-dot" title="Live"></div>
+</nav>
+
+<!-- PAGES CONTAINER -->
+<div id="app"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal-box" onclick="event.stopPropagation()">
+    <div id="modal-content"></div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:16px" onclick="closeModal()">Close</button>
+  </div>
 </div>
-<div>
-<h3>Showcase Projects</h3>
-<p>Add a portfolio of your projects, articles or designs. Include links, images and descriptions to highlight your work.</p>
-</div>
-<div>
-<h3>Share Your Profile</h3>
-<p>Publish a single link to your CVita page that you can share with recruiters, colleagues and friends.</p>
-</div>
-</div>
-</section>
-<section>
-<h2>Get Started</h2>
-<p>Create your profile and start showcasing your work. There’s no hidden AI marketplace or false promises—just straightforward tools to help you tell your story.</p>
-<div class="cta">
-<a href="#">Sign Up for Free</a>
-</div>
-</section>
-</main>
-<footer>
-<p>© 2026 CVita. Built for professionals who value substance over hype.</p>
-</footer>
+
+<script>
+// ─── ROUTER ────────────────────────────────────────────────────────────────
+let currentPage = 'landing';
+function goto(page){
+  currentPage = page;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const nb = document.getElementById('nav-'+page);
+  if(nb) nb.classList.add('active');
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'page';
+  div.innerHTML = PAGES[page]();
+  app.appendChild(div);
+  setTimeout(()=>{ if(INITS[page]) INITS[page](); },10);
+  window.scrollTo(0,0);
+}
+function openModal(html){ document.getElementById('modal-content').innerHTML=html; document.getElementById('modal-overlay').classList.add('open'); }
+function closeModal(e){ if(!e||e.target===document.getElementById('modal-overlay')) document.getElementById('modal-overlay').classList.remove('open'); }
+
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const MARKET_DATA = [
+  {id:'m1',author:'Alex Morgan',av:'AM',ac:'#3b82f6',title:'UX Research Methods Masterclass',type:'Course',icon:'📚',price:49,rating:4.9,reviews:187,students:1240,tags:['UXResearch','UserTesting','Design'],desc:'6-week deep dive into qualitative and quantitative research. Includes live templates and certificate.',badge:'Bestseller',bc:'#f59e0b'},
+  {id:'m2',author:'Priya Nair',av:'PN',ac:'#8b5cf6',title:'Product Strategy for SaaS Leaders',type:'Course',icon:'📚',price:79,rating:4.8,reviews:134,students:890,tags:['ProductStrategy','SaaS','B2B'],desc:'Complete framework for product roadmaps. Used by 30+ PMs at top companies.',badge:'New',bc:'#10b981'},
+  {id:'m3',author:'Alex Morgan',av:'AM',ac:'#3b82f6',title:'Design Systems Slide Deck Template',type:'Template',icon:'📊',price:19,rating:4.7,reviews:312,students:2100,tags:['Figma','DesignSystems','Templates'],desc:'80-slide Figma template used by 200+ product teams. Full customization guide.',badge:'Top Rated',bc:'#06b6d4'},
+  {id:'m4',author:'Omar Al-Rashid',av:'OA',ac:'#f97316',title:'ML for Finance: From Scratch',type:'Lecture',icon:'🎓',price:39,rating:4.9,reviews:98,students:560,tags:['MachineLearning','Python','FinTech'],desc:'Applied ML for financial services — fraud detection, credit scoring, algo trading.',badge:'',bc:''},
+  {id:'m5',author:'Sophie Laurent',av:'SL',ac:'#06b6d4',title:'Growth Marketing Playbook 2025',type:'eBook',icon:'📖',price:29,rating:4.6,reviews:203,students:1540,tags:['Marketing','GrowthHacking','SaaS'],desc:'140-page playbook with real case studies covering SEO, paid, email and retention.',badge:'Bestseller',bc:'#f59e0b'},
+  {id:'m6',author:'James Okafor',av:'JO',ac:'#10b981',title:'Full-Stack API Architecture Workshop',type:'Workshop',icon:'🛠',price:59,rating:4.8,reviews:76,students:430,tags:['Backend','NodeJS','Architecture'],desc:'3-hour workshop on scalable REST and GraphQL APIs. Covers auth, caching, deployment.',badge:'',bc:''},
+];
+const JOBS_DATA = [
+  {id:'j1',company:'Stripe',logo:'💳',role:'Senior Product Designer',loc:'San Francisco / Remote',type:'Full-time',salary:'$140k–$180k',tags:['ProductDesign','Figma','DesignSystems','FinTech'],posted:'2d',applicants:47,match:94,urgent:true},
+  {id:'j2',company:'Notion',logo:'📝',role:'Head of Design',loc:'Remote',type:'Full-time',salary:'$160k–$210k',tags:['ProductDesign','Leadership','DesignSystems','RemoteWork'],posted:'1d',applicants:89,match:88,urgent:false},
+  {id:'j3',company:'Vercel',logo:'▲',role:'UX Designer — Design Systems',loc:'Remote',type:'Full-time',salary:'$110k–$140k',tags:['UXDesign','DesignTokens','Figma','RemoteWork'],posted:'3d',applicants:62,match:91,urgent:false},
+  {id:'j4',company:'Figma',logo:'🎨',role:'Staff Product Designer',loc:'San Francisco',type:'Full-time',salary:'$170k–$220k',tags:['ProductDesign','Figma','UserResearch','Leadership'],posted:'5d',applicants:210,match:96,urgent:true},
+  {id:'j5',company:'Luma AI',logo:'🔮',role:'AI Product Designer',loc:'SF / Hybrid',type:'Hybrid',salary:'$150k–$195k',tags:['ProductDesign','AI','Hybrid'],posted:'1d',applicants:33,match:89,urgent:true},
+  {id:'j6',company:'Linear',logo:'⚡',role:'Product Manager',loc:'Remote',type:'Full-time',salary:'$130k–$165k',tags:['ProductManager','Agile','RemoteWork'],posted:'4d',applicants:55,match:72,urgent:false},
+];
+const CANDIDATES = [
+  {id:'c1',name:'Alex Morgan',av:'AM',ac:'#3b82f6',title:'Senior Product Designer',loc:'San Francisco',status:'Open',match:94,tags:['ProductDesign','UXDesign','OpenToWork','Figma','DesignSystems','AI','RemoteWork'],score:82,salary:'$120k–$145k'},
+  {id:'c2',name:'James Okafor',av:'JO',ac:'#10b981',title:'Full Stack Engineer',loc:'Remote',status:'Open',match:88,tags:['FullStack','React','Python','Backend','OpenToWork','RemoteWork'],score:91,salary:'$90k–$115k'},
+  {id:'c3',name:'Priya Nair',av:'PN',ac:'#8b5cf6',title:'Product Manager',loc:'London',status:'Networking',match:76,tags:['ProductManager','Agile','SaaS','B2B','Networking','FinTech'],score:75,salary:'£80k–£100k'},
+  {id:'c4',name:'Omar Al-Rashid',av:'OA',ac:'#f97316',title:'Data Scientist',loc:'Dubai',status:'Open',match:85,tags:['DataScience','AI','Python','OpenToWork','FinTech','MachineLearning'],score:88,salary:'$95k–$120k'},
+];
+const AGENTS = [
+  {id:'cv',icon:'✍️',name:'CV Optimizer',color:'#3b82f6',cat:'Career',desc:'Rewrites your bullets with impact language, quantified metrics and ATS keywords.',
+   output:'REWRITES:\n• Led component library redesign → cut design debt 40%, accelerated sprint velocity 2.3×\n• Drove 3 product launches with 12 cross-functional PMs (was: "worked on")\n• Mentored 4 junior designers → improved team output 35%\n\nATS KEYWORDS ADDED: design systems, cross-functional, OKRs\nSCORE: 74 → 88 (+14 pts) ↑'},
+  {id:'hashtag',icon:'🏷',name:'Hashtag Scout',color:'#06b6d4',cat:'Network',desc:'Finds trending hashtags recruiters actively search for your skill set right now.',
+   output:'ADD NOW:\n#UXLeadership (+340% YoY recruiter searches)\n#DesignTokens (high signal, low competition)\n#AIDesign (emerging, fast-growing)\n\nKEEP: #DesignSystems, #OpenToWork, #Figma\nREMOVE: #Designer (too broad, low signal)\n\nRECRUITER VISIBILITY: +64% ↑'},
+  {id:'price',icon:'💰',name:'Knowledge Pricer',color:'#f59e0b',cat:'Earnings',desc:'Researches Udemy, Coursera & Gumroad to find the optimal price for your content.',
+   output:'RECOMMENDATIONS:\nUX Research Masterclass: $49 → $79\n  Market range: $79–$149 | Demand: high\n  Extra revenue: +$5,580/year\n\nDesign Deck Template: $19 → $29\n  Market range: $24–$49\n  Extra revenue: +$3,120/year\n\nTOTAL ANNUAL UPLIFT: +$8,700 💰'},
+  {id:'patent',icon:'⚖️',name:'Patent Drafter',color:'#8b5cf6',cat:'IP',desc:'Writes a full patent abstract and independent claims ready to send to your attorney.',
+   output:'ABSTRACT:\nA system for dynamically adapting UI component layouts based on real-time user behaviour signals and accessibility requirements.\n\nCLAIM 1: A computer-implemented method comprising:\n(a) collecting real-time interaction signals;\n(b) evaluating accessibility compliance;\n(c) dynamically propagating token changes.\n\nPRIOR ART: Distinguished from US10,482,091 (Adobe) by real-time co-optimization.'},
+  {id:'outreach',icon:'✉️',name:'Outreach Writer',color:'#10b981',cat:'Recruit',desc:'Writes hyper-personalized candidate messages referencing their exact hashtags.',
+   output:'SUBJECT: Your #DesignSystems patent caught my eye\n\nHi Alex,\n\nYour Adaptive UI patent and the DesignOS platform immediately stood out — that\'s exactly the systems thinking we need at Stripe.\n\nWe\'re hiring a Staff Product Designer. Your #DesignTokens and #AIDesign background is a rare match.\n\nOpen to a 20-min call this week?\n— Sarah, Design Recruiting @ Stripe'},
+  {id:'career',icon:'🗺',name:'Career Path Agent',color:'#ec4899',cat:'Career',desc:'Maps your full 3-year career roadmap with quarterly milestones and next actions.',
+   output:'TARGET: CPO at Series B fintech in 3 years\n\nQ1: Apply for Head of Design at 3 Series B companies\nQ2: Land role. Own a product OKR, not just design\nQ3: Ship a metric-driven feature solo\nQ4: Manage team of 4+\n\n90-DAY QUICK WINS:\n1. Add #UXLeadership → 3× more recruiter views\n2. Add ComponentCraft MRR to Brand section\n3. Apply to Notion Head of Design (96% match)'},
+];
+// State
+const state = {
+  cart:[], bought:[], applied:[], saved:[],
+  aiCredits:5, recCredits:3, unlocked:[],
+  activeSection:'experience', filterTag:'All', filterJob:'All',
+  searchTags:[], agentResults:{}, agentRunning:null,
+  boostBought:false, showBoost:true,
+  aiTips:null, aiRunning:false,
+  pricingTab:'pro', marketFilter:'All',
+};
+const MY_TAGS = ['ProductDesign','UXDesign','DesignSystems','Figma','AI','RemoteWork'];
+
+// ─── LANDING ───────────────────────────────────────────────────────────────
+PAGES = {};
+PAGES.landing = ()=>`
+<div style="background:var(--bg)">
+  <!-- Hero -->
+  <div style="padding:70px 24px 56px;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% -5%,#3b82f622 0%,transparent 70%)">
+    <div class="pill" style="background:#1d3a6e;color:#93c5fd;border:1px solid #3b82f555;margin-bottom:24px;font-size:11px;padding:5px 16px">
+      🚀 CV BUILDER · KNOWLEDGE MARKET · JOB MATCHING
+    </div>
+    <h1 style="font-size:clamp(36px,6vw,66px);font-weight:900;line-height:1.08;margin-bottom:20px">
+      <span style="background:linear-gradient(135deg,#f0f4ff 40%,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Your Career Story.</span><br>
+      <span style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Your Knowledge.</span><br>
+      <span style="background:linear-gradient(135deg,#8b5cf6,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Your Network.</span>
+    </h1>
+    <p style="font-size:15px;color:var(--mid);line-height:1.7;max-width:600px;margin:0 auto 32px">
+      A platform to build your living CV, share knowledge, connect with recruiters and discover opportunities — all designed to help you grow.
+    </p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
+      <input id="hero-email" placeholder="your@email.com" style="width:260px;background:var(--card);border:1px solid var(--brd2);color:var(--txt);font-family:'DM Mono',monospace;font-size:13px;padding:12px 16px;outline:none;border-radius:8px"
+        onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--brd2)'"/>
+      <button class="btn btn-primary" onclick="heroSignup()" style="animation:glow 2s infinite">GET STARTED FREE →</button>
+    </div>
+    <div id="hero-success" style="display:none" class="alert alert-green" style="display:none;justify-content:center;max-width:360px;margin:0 auto 12px">
+      🎉 You're in! We'll email you shortly.
+    </div>
+    <div style="font-size:11px;color:var(--mute)">Free plan available · No credit card · Cancel anytime</div>
+    <!-- Stats -->
+    <div style="display:flex;border-top:1px solid var(--brd);margin-top:48px;padding-top:36px;max-width:680px;margin-left:auto;margin-right:auto">
+      ${[['1,000+','Professionals'],['500+','Marketplace items'],['Recruiter','Connections'],['AI','Assistants']].map(([v,l],i)=>`
+      <div style="flex:1;text-align:center;${i<3?'border-right:1px solid var(--brd);':''}padding:0 16px">
+        <div style="font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--blue)">${v}</div>
+        <div style="font-size:10px;color:var(--mute);margin-top:4px">${l.toUpperCase()}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- 3 Revenue Streams -->
+  <div style="background:var(--surf);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);padding:52px 24px">
+    <div style="max-width:1000px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:32px">
+        <div class="section-label" style="margin-bottom:8px">3 WAYS CVITA HELPS YOU GROW</div>
+        <h2 style="font-size:26px;color:var(--txt)">Not just a CV — a professional platform</h2>
+      </div>
+      <div class="grid-2">
+        ${[
+          ['🎓','#f59e0b','Sell Your Knowledge','Upload courses, templates, keynotes. Set your price. Keep 85–92% of every sale. Buyers find you through the marketplace.','Creators have found success selling their content through CVita.'],
+          ['🔍','#06b6d4','Get Found by Recruiters','Set hashtags like #OpenToWork #React. Recruiters pay CVita to search — you get warm, direct outreach with a match score.','Many users have received interview invitations thanks to CVita hashtag searches.'],
+          ['🚀','#8b5cf6','Showcase Your Ventures','List your startups with funding, revenue and traction. Investors discover you through your public CVita profile.','Some founders have connected with investors through their CVita pages.'],
+        ].map(([icon,c,t,b,eg])=>`
+        <div class="card card-hover" style="border-color:${c}33" onmouseenter="this.style.borderColor='${c}77'" onmouseleave="this.style.borderColor='${c}33'">
+          <div style="width:44px;height:44px;border-radius:12px;background:${c}18;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px">${icon}</div>
+          <h3 style="font-size:17px;color:var(--txt);margin-bottom:8px;font-weight:700">${t}</h3>
+          <p style="font-size:12px;color:var(--mid);line-height:1.6;margin-bottom:10px">${b}</p>
+          <div style="font-size:11px;color:${c};background:${c}12;padding:6px 10px;border-radius:6px">💡 ${eg}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- Portal cards -->
+  <div style="padding:52px 24px;max-width:1000px;margin:0 auto">
+    <h2 style="text-align:center;font-size:24px;margin-bottom:28px">Explore the platform</h2>
+    <div class="grid-4">
+      ${[
+        ['dashboard','👤','#3b82f6','User Dashboard','Build your full living CV'],
+        ['market','🛒','#f59e0b','Knowledge Market','Buy & sell professional knowledge'],
+        ['jobs','💼','#10b981','Job Board','Jobs matched to your hashtags'],
+        ['recruiter','🔍','#06b6d4','Recruiter Portal','Find talent by hashtag'],
+        ['agents','🤖','#8b5cf6','AI Agents','Autonomous AI that acts for you'],
+        ['pricing','💰','#f97316','Pricing','Free to $99/mo plans'],
+      ].map(([id,icon,c,t,d])=>`
+      <div class="card" style="text-align:center;border-color:${c}33;cursor:pointer;transition:all .2s"
+        onclick="goto('${id}')"
+        onmouseenter="this.style.background='${c}12';this.style.borderColor='${c}77'"
+        onmouseleave="this.style.background='var(--surf)';this.style.borderColor='${c}33'">
+        <div style="font-size:28px;margin-bottom:10px">${icon}</div>
+        <div style="font-size:12px;font-weight:700;color:${c};margin-bottom:4px">${t}</div>
+        <div style="font-size:11px;color:var(--mute)">${d}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  <div style="background:var(--surf);border-top:1px solid var(--brd);padding:48px 24px">
+    <div style="max-width:900px;margin:0 auto">
+      <h2 style="text-align:center;font-size:22px;margin-bottom:28px">Professionals love CVita</h2>
+      <div class="grid-2">
+        ${[
+          ['Sarah K.','UX Researcher, Google','I got 3 recruiter messages within a week of setting my hashtags. CVita actually works.','SK','#3b82f6'],
+          ['Marcus T.','Founder, DevFlow','I sold my first course within weeks. The marketplace is a great channel.','MT','#10b981'],
+          ['Yuki H.','Senior PM, Spotify','The AI CV Optimizer rewrote my bullets. I got callbacks from companies that never responded before.','YH','#8b5cf6'],
+        ].map(([n,r,t,av,c])=>`
+        <div class="card">
+          <p style="font-size:12px;color:var(--mid);line-height:1.6;margin-bottom:14px;font-style:italic">"${t}"</p>
+          <div style="display:flex;gap:9px;align-items:center">
+            <div style="width:32px;height:32px;border-radius:50%;background:${c}22;border:2px solid ${c}44;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${c}">${av}</div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--txt)">${n}</div>
+              <div style="font-size:10px;color:var(--mute)">${r}</div>
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- Final CTA -->
+  <div style="background:linear-gradient(135deg,#1d3a6e22,var(--bg));border-top:1px solid var(--brd);padding:56px 24px;text-align:center">
+    <h2 style="font-size:28px;margin-bottom:12px">Start building your career story today</h2>
+    <p style="font-size:13px;color:var(--mid);margin-bottom:28px">Join professionals building their CVs on CVita</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="goto('dashboard')">GET STARTED FREE →</button>
+      <button class="btn btn-ghost" onclick="goto('market')">Browse Knowledge Market</button>
+    </div>
+  </div>
+</div>`;
+
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────
+const SECTIONS = [
+  {id:'experience',label:'Experience',icon:'💼',count:2},
+  {id:'education',label:'Education',icon:'🎓',count:1},
+  {id:'skills',label:'Skills',icon:'⚡',count:5},
+  {id:'certifications',label:'Certifications',icon:'🏅',count:1},
+  {id:'projects',label:'Projects',icon:'🔨',count:1},
+  {id:'hashtags',label:'Hashtags',icon:'🏷',count:7},
+  {id:'knowledge',label:'Knowledge Hub',icon:'📚',count:5},
+  {id:'patents',label:'Patents & IP',icon:'⚖️',count:2},
+  {id:'innovation',label:'Innovation',icon:'💡',count:2},
+  {id:'brand',label:'Ventures & Brand',icon:'🚀',count:2},
+];
+const AI_TIPS = {
+  experience:["Replace 'worked on' → 'led' to boost ATS score 18%","Add a metric to bullet 3: 'mentored 4 designers, improving output 35%'","Add keyword 'design systems' — searched 2,400×/mo by recruiters"],
+  hashtags:["Add #UXLeadership — 340% YoY growth in recruiter searches","Remove #Designer — too broad, too competitive","Add #DesignTokens — high signal, low competition"],
+  knowledge:["UX Research course is underpriced vs market ($79–$149 range)","Add a free preview to boost conversion ~40%","Tag #CertificateProgram for better marketplace ranking"],
+  patents:["Add expiry dates — required for recruiter display","Link to Google Patents URL for external verification","Add 'commercialized' toggle if generating licensing revenue"],
+  skills:["SQL rated 3★ — add a project using it to validate","Prototyping 5★ — mention in Experience bullets to reinforce","Add 'Accessibility / WCAG' — high demand, rarely listed"],
+  default:["Your content looks strong","Add one more quantified result to boost score","Link to an external portfolio or published work"],
+};
+function getSectionContent(id){
+  if(id==='experience') return `
+    ${[{t:'Senior Product Designer',o:'Figma Inc.',p:'Mar 2022 – Present',b:['Led redesign of component library, reducing design debt by 40%','Collaborated with 12 PMs to ship 3 major product features','Mentored 4 junior designers across EMEA']},
+       {t:'UX Designer',o:'Shopify',p:'Jun 2020 – Feb 2022',b:['Designed checkout flow improvements increasing conversion by 18%','Ran 30+ user research sessions to validate product hypotheses']}].map(e=>`
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div><div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt)">${e.t}</div>
+             <div style="font-size:11px;color:var(--mid)">${e.o}</div></div>
+        <span class="pill" style="background:var(--card);color:var(--mute);font-size:9px">${e.p}</span>
+      </div>
+      ${e.b.map(b=>`<div style="display:flex;gap:8px;font-size:12px;color:var(--mid);margin-top:5px;line-height:1.5"><span style="color:var(--gold);flex-shrink:0">•</span>${b}</div>`).join('')}
+    </div>`).join('')}`;
+
+  if(id==='hashtags') return `
+    <div class="card">
+      <div class="section-label">STATUS MODE</div>
+      <div style="display:inline-flex;align-items:center;gap:8px;background:var(--greenbg);border:1px solid #10b98144;border-radius:20px;padding:8px 16px;margin-bottom:18px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>
+        <span style="font-size:12px;font-weight:700;color:var(--green)">Open to Work</span>
+      </div>
+      <div class="section-label">YOUR HASHTAGS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px">
+        ${['ProductDesign','UXDesign','OpenToWork','DesignSystems','Figma','RemoteWork','AI'].map(t=>`
+        <span style="font-size:11px;background:var(--bluebg);border:1px solid #3b82f644;color:var(--blue);padding:4px 12px;border-radius:20px">#${t}</span>`).join('')}
+        <span style="font-size:11px;color:var(--mute);border:1px dashed var(--brd2);padding:4px 12px;border-radius:20px;cursor:pointer">+ add tag</span>
+      </div>
+      <div class="section-label">JOB PREFERENCES</div>
+      <div style="display:flex;gap:7px">
+        ${['Full-time','Remote'].map(j=>`<span style="font-size:11px;background:var(--card);border:1px solid var(--brd2);color:var(--mid);padding:5px 14px;border-radius:20px">${j}</span>`).join('')}
+      </div>
+    </div>`;
+
+  if(id==='knowledge') return `
+    ${[{t:'UX Research Methods Masterclass',ty:'📚 Course',a:'💰 Paid',p:'$49',s:'4.8 ★ rating · 187 students',c:'var(--purple)'},
+       {t:'Design Systems Slide Deck Template',ty:'📊 Template',a:'💰 Paid',p:'$19',s:'4.7 ★ rating · 312 learners',c:'var(--purple)'},
+       {t:'The Future of AI in Product Design',ty:'🎤 Keynote',a:'🌐 Free',p:'—',s:'Over 9,000 views',c:'var(--green)'},
+       {t:'Design Critique Framework',ty:'🛠 Workshop',a:'🔒 Private',p:'—',s:'Internal only',c:'var(--mute)'}].map(k=>`
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;padding-right:12px">
+          <div style="font-family:'Playfair Display',serif;font-size:13px;color:var(--txt);margin-bottom:6px">${k.t}</div>
+          <div style="display:flex;gap:6px">
+            <span class="pill" style="background:var(--card);color:var(--mute)">${k.ty}</span>
+            <span class="pill" style="background:${k.c}22;color:${k.c}">${k.a}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:16px;font-weight:900;color:${k.c}">${k.p}</div>
+          <div style="font-size:10px;color:var(--green);margin-top:2px">${k.s}</div>
+        </div>
+      </div>
+    </div>`).join('')}
+    <div style="background:linear-gradient(135deg,var(--purplebg),var(--goldbg));border:1px solid #f59e0b33;border-radius:10px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:10px;color:var(--gold);letter-spacing:1px;margin-bottom:2px">ENGAGEMENT THIS MONTH</div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--txt)">350 engaged learners</div>
+      </div>
+      <span class="pill" style="background:#10b98122;color:var(--green)">85% kept by you</span>
+    </div>`;
+
+  if(id==='patents') return `
+    ${[{t:'Adaptive UI Component Layout System',n:'US11,234,567',s:'✅ Granted',d:'Aug 2023',c:'var(--green)',bg:'var(--greenbg)',ab:'A system for dynamically adapting UI layouts based on real-time user behaviour signals and accessibility requirements.'},
+       {t:'Gesture-Based Design Token Propagation',n:'PCT/US2023/014892',s:'⏳ Pending',d:'Filed Apr 2023',c:'var(--gold)',bg:'var(--goldbg)',ab:'Method for propagating design token changes across multi-platform codebases via gesture-based triggers.'}].map(p=>`
+    <div class="card" style="margin-bottom:10px;border-color:${p.c}33">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-family:'Playfair Display',serif;font-size:13px;color:var(--txt);flex:1;padding-right:12px">⚖️ ${p.t}</div>
+        <span class="pill" style="background:${p.bg};color:${p.c}">${p.s}</span>
+      </div>
+      <div style="font-size:10px;color:var(--blue);margin-bottom:6px">№ ${p.n} · ${p.d}</div>
+      <div style="font-size:11px;color:var(--mid);line-height:1.5">${p.ab}</div>
+    </div>`).join('')}`;
+
+  if(id==='brand') return `
+    ${[{n:'DesignOS Studio',r:'Founder & CEO',s:'Profitable',raised:'Growing',rev:'Growing revenue',team:8},
+       {n:'ComponentCraft',r:'Co-founder & CPO',s:'Seed',raised:'External funding',rev:'Early revenue',team:3}].map(v=>`
+    <div class="card" style="margin-bottom:10px;border-color:#f59e0b33">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#d97706);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🚀</div>
+        <div style="flex:1">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+            <span style="font-family:'Playfair Display',serif;font-size:16px;font-weight:900;color:var(--txt)">${v.n}</span>
+            <span class="pill" style="background:var(--greenbg);color:var(--green)">🟢 Active</span>
+            <span class="pill" style="background:${v.s==='Profitable'?'var(--greenbg)':'var(--bluebg)'};color:${v.s==='Profitable'?'var(--green)':'var(--blue)'}">${v.s}</span>
+          </div>
+          <div style="font-size:11px;color:var(--mid);margin-bottom:8px">${v.r} · ${v.team} people</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <span class="pill" style="background:var(--purplebg);color:var(--purple)">💜 ${v.raised}</span>
+            <span class="pill" style="background:var(--greenbg);color:var(--green)">📈 ${v.rev}</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')}`;
+
+  if(id==='skills') return `
+    <div class="card">
+      ${[['Figma',5,'var(--blue)'],['User Research',4,'var(--teal)'],['Prototyping',5,'var(--blue)'],['Design Systems',4,'var(--purple)'],['React / Frontend',3,'var(--green)']].map(([n,l,c])=>`
+      <div style="padding:10px 0;border-bottom:1px solid var(--brd)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--txt)">${n}</span>
+          <span style="font-size:12px;color:${c}">${'★'.repeat(l)}${'☆'.repeat(5-l)}</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${l*20}%;background:linear-gradient(90deg,${c},${c}88)"></div></div>
+      </div>`).join('')}
+    </div>`;
+
+  if(id==='education') return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt)">B.Sc. Interaction Design</div>
+          <div style="font-size:11px;color:var(--mid)">California College of the Arts</div>
+        </div>
+        <span class="pill" style="background:var(--card);color:var(--mute);font-size:9px">2017 – 2020</span>
+      </div>
+      <div style="font-size:12px;color:var(--mid)">GPA: 3.9 · Dean's List · Graduated with Honours</div>
+    </div>`;
+
+  if(id==='certifications') return `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt)">Google UX Design Certificate</div>
+          <div style="font-size:11px;color:var(--mid)">Google · Issued Jan 2023</div>
+        </div>
+        <span class="pill" style="background:var(--greenbg);color:var(--green)">✓ Verified</span>
+      </div>
+    </div>`;
+
+  if(id==='projects') return `
+    <div class="card">
+      <div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt);margin-bottom:6px">DesignOS Component Library</div>
+      <div style="font-size:11px;color:var(--mid);margin-bottom:8px">Lead Designer · Figma, React, Storybook</div>
+      <div style="font-size:12px;color:var(--mid);line-height:1.5;margin-bottom:10px">Open-source design system used by 800+ teams. 12k GitHub stars. Featured in Figma Community.</div>
+      <a href="#" style="font-size:11px;color:var(--blue)">→ github.com/alexmorgan/designos</a>
+    </div>`;
+
+  if(id==='innovation') return `
+    ${[{t:'DesignOS Platform',ty:'Platform',stage:'Deployed',impact:'Used by 800+ teams globally',metrics:['12k GitHub stars','Featured in Figma Community','Adopted by 3 Fortune 500 companies']},
+       {t:'AI Accessibility Auditor',ty:'Algorithm',stage:'Scaled',impact:'Automated WCAG compliance checking',metrics:['98% accuracy vs manual audit','Saves 40hrs/week per team','Used by 200+ accessibility teams']}].map(v=>`
+    <div class="card" style="margin-bottom:10px;border-color:var(--blue)33">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt)">💡 ${v.t}</span>
+        <div style="display:flex;gap:6px">
+          <span class="pill" style="background:var(--bluebg);color:var(--blue)">${v.ty}</span>
+          <span class="pill" style="background:var(--greenbg);color:var(--green)">${v.stage}</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--mid);margin-bottom:8px">${v.impact}</div>
+      ${v.metrics.map(m=>`<div style="font-size:11px;color:var(--mid);margin-top:3px">• ${m}</div>`).join('')}
+    </div>`).join('')}`;
+
+  return `<div class="card" style="text-align:center;padding:36px">
+    <div style="font-size:36px;margin-bottom:12px">${SECTIONS.find(s=>s.id===id)?.icon||'📄'}</div>
+    <div style="font-size:12px;color:var(--mute);margin-bottom:12px">${(SECTIONS.find(s=>s.id===id)?.label||id).toUpperCase()} SECTION</div>
+    <button class="btn btn-primary btn-sm" onclick="alert('Add form would open here')">+ Add ${SECTIONS.find(s=>s.id===id)?.label||id}</button>
+  </div>`;
+}
+
+PAGES.dashboard = ()=>`
+<div style="background:var(--bg)">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--txt)">Alex Morgan <span style="color:var(--mid);font-size:12px;font-weight:400;font-family:'DM Mono',monospace">— Senior Product Designer</span></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <span class="pill" style="background:var(--bluebg);color:var(--blue)">PRO</span>
+      <span class="pill" style="background:var(--greenbg);color:var(--green)"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:3px;animation:pulse 2s infinite"></span>Open to Work</span>
+      <span class="pill" style="background:var(--goldbg);color:var(--gold)">Score: 82 / 100</span>
+      <button class="btn btn-ghost btn-sm" onclick="goto('market')">🛒 My Shop</button>
+    </div>
+  </div>
+  <!-- Boost banner -->
+  <div id="boost-banner" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);padding:10px 20px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:16px">⭐</span>
+    <span style="font-size:11px;color:#fff;flex:1"><strong>Profile Boost available</strong> — Appear in top 3 recruiter results for 30 days · Only $9</span>
+    <button class="btn btn-sm" style="background:#fff;color:#6d28d9;border:none;font-family:'DM Mono',monospace;font-weight:700;cursor:pointer" onclick="buyBoost()">Boost for $9</button>
+    <span style="color:#ffffff88;cursor:pointer;font-size:18px" onclick="document.getElementById('boost-banner').style.display='none'">✕</span>
+  </div>
+  <!-- 3-col layout -->
+  <div class="sidebar-layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="section-label" style="padding:4px 10px">CV SECTIONS</div>
+      ${SECTIONS.map(s=>`
+      <div class="sidebar-item ${state.activeSection===s.id?'active':''}" id="si-${s.id}" onclick="switchSection('${s.id}')">
+        <span>${s.icon} ${s.label}</span><span style="font-size:10px;color:var(--brd2)">${s.count}</span>
+      </div>`).join('')}
+      <div style="margin-top:14px;border-top:1px solid var(--brd);padding-top:12px">
+        <div class="section-label" style="padding:4px 10px">QUICK LINKS</div>
+        ${[['🛒','My Knowledge Shop','market'],['💼','Browse Jobs','jobs'],['🤖','AI Agents','agents'],['💰','Upgrade Plan','pricing']].map(([ic,lb,pg])=>`
+        <div class="sidebar-item" onclick="goto('${pg}')">${ic} ${lb}</div>`).join('')}
+      </div>
+    </div>
+    <!-- MAIN -->
+    <div class="main-panel" id="main-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div id="section-title" class="section-label" style="margin:0">${SECTIONS.find(s=>s.id===state.activeSection)?.icon} ${state.activeSection.toUpperCase()}</div>
+        <button id="ai-btn" class="btn btn-sm" onclick="runAI()" style="background:linear-gradient(135deg,var(--green),#059669);color:#fff;border:none;padding:7px 14px;font-family:'DM Mono',monospace;font-size:10px;font-weight:700;cursor:pointer;border-radius:7px">
+          🤖 AI Optimise · <span id="credit-count">${state.aiCredits}</span> credits
+        </button>
+      </div>
+      <div id="ai-tips-box" style="display:none" class="alert alert-green">
+        <div style="width:100%">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:8px">🤖 AI SUGGESTIONS</div>
+          <div id="ai-tips-content"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-primary btn-sm" onclick="alert('Changes applied!')">Apply Changes</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-tips-box').style.display='none'">Dismiss</button>
+          </div>
+        </div>
+      </div>
+      <div id="no-credits-box" style="display:none" class="alert alert-purple">
+        <span style="font-size:18px">🤖</span>
+        <div style="flex:1">
+          <div style="font-weight:700">All 5 free AI credits used</div>
+          <div style="color:var(--mid);font-size:11px;margin-top:2px">Upgrade to Pro for 20 runs/month</div>
+        </div>
+        <button class="btn btn-sm btn-purple" onclick="goto('pricing')">Upgrade $15/mo</button>
+      </div>
+      <div id="section-content">${getSectionContent(state.activeSection)}</div>
+    </div>
+    <!-- RIGHT -->
+    <div class="right-panel">
+      <div class="section-label">AI CAREER SCORE</div>
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:var(--gold);line-height:1">82</div>
+        <div style="font-size:10px;color:var(--mute)">/100</div>
+        <div class="bar-wrap" style="margin-top:8px"><div class="bar-fill" style="width:82%;background:linear-gradient(90deg,var(--gold),#f59e0b)"></div></div>
+      </div>
+      ${[['Impact Language',88,'var(--green)'],['ATS Keywords',74,'var(--gold)'],['Completeness',85,'var(--blue)'],['Formatting',91,'var(--green)'],['Skill Depth',76,'var(--gold)']].map(([k,v,c])=>`
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--mute);margin-bottom:3px">
+          <span>${k}</span><span style="color:${c}">${v}%</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${v}%;background:linear-gradient(90deg,${c},${c}88)"></div></div>
+      </div>`).join('')}
+
+      <div style="margin-top:16px;border-top:1px solid var(--brd);padding-top:14px">
+        <div class="section-label">KNOWLEDGE EARNINGS</div>
+        ${[['UX Masterclass','187 sales','$7,633'],['Design Deck','312 sales','$5,928']].map(([t,s,r])=>`
+        <div style="background:var(--goldbg);border:1px solid #f59e0b33;border-radius:7px;padding:9px 11px;margin-bottom:8px">
+          <div style="font-size:10px;color:var(--mid)">${t}</div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px">
+            <span style="font-size:9px;color:var(--mute)">${s}</span>
+            <span style="font-size:13px;font-weight:900;color:var(--purple)">${r}</span>
+          </div>
+        </div>`).join('')}
+        <div style="background:linear-gradient(135deg,var(--purpledark),var(--purple));border-radius:8px;padding:10px 12px;text-align:center">
+          <div style="font-size:9px;color:#d4c6ff;margin-bottom:2px">TOTAL THIS MONTH</div>
+          <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#fff">350 engaged learners</div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;border-top:1px solid var(--brd);padding-top:14px">
+        <div class="section-label">PROFILE VISIBILITY</div>
+        ${[['Recruiter views','48 this week'],['Job matches','12 active'],['Profile saves','7 recruiters']].map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--mute);margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--brd)">
+          <span>${k}</span><span style="color:var(--txt);font-weight:700">${v}</span>
+        </div>`).join('')}
+        <button class="btn btn-sm btn-full" style="background:linear-gradient(135deg,var(--purple),var(--purpledark));color:#fff;border:none;margin-top:6px" onclick="buyBoost()">⭐ Boost Profile — $9</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+
+// ─── MARKET ────────────────────────────────────────────────────────────────
+PAGES.market = ()=>{
+  const types = ['All','Course','Template','eBook','Workshop','Lecture'];
+  const f = state.marketFilter;
+  const items = MARKET_DATA.filter(i=>f==='All'||i.type===f);
+  return `
+<div style="background:var(--bg)">
+  <div style="background:linear-gradient(135deg,var(--surf),var(--card));border-bottom:1px solid var(--brd);padding:32px 24px;text-align:center">
+    <div class="section-label" style="margin-bottom:8px">KNOWLEDGE MARKETPLACE</div>
+    <h2 style="font-size:26px;margin-bottom:8px">Learn from world-class professionals</h2>
+    <p style="font-size:12px;color:var(--mid);margin-bottom:20px">Courses, templates, workshops & research — created by verified CVita professionals</p>
+    <div style="display:flex;gap:24px;justify-content:center">
+      ${[['$134k','Sold total'],['4.8★','Avg rating'],['6,200','Learners']].map(([v,l])=>`
+      <div style="text-align:center">
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--blue)">${v}</div>
+        <div style="font-size:10px;color:var(--mute)">${l}</div>
+      </div>`).join('')}
+    </div>
+  </div>
+  <div style="max-width:1100px;margin:0 auto;padding:24px">
+    ${state.cart.length>0?`
+    <div class="alert alert-purple" style="margin-bottom:16px">
+      <span style="font-weight:700;flex:1">🛒 ${state.cart.length} item${state.cart.length>1?'s':''} in cart — Total: $${state.cart.reduce((s,id)=>{const it=MARKET_DATA.find(x=>x.id===id);return s+(it?it.price:0)},0)}</span>
+      <button class="btn btn-primary btn-sm" onclick="checkoutAll()">Checkout →</button>
+    </div>`:''}
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      ${types.map(t=>`<div class="tag-chip" style="color:${state.marketFilter===t?'#fff':'var(--mute)'};background:${state.marketFilter===t?'var(--blue)':'var(--surf)'};border-color:${state.marketFilter===t?'var(--blue)':'var(--brd)'};padding:5px 16px" onclick="setMarketFilter('${t}')">${t}</div>`).join('')}
+      <span style="margin-left:auto;font-size:11px;color:var(--mute);align-self:center">${items.length} items</span>
+    </div>
+    <div class="grid-3">
+      ${items.map(item=>`
+      <div class="card card-hover" style="overflow:hidden;padding:0">
+        <div style="height:3px;background:linear-gradient(90deg,var(--blue),var(--purple))"></div>
+        <div style="padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="width:38px;height:38px;border-radius:9px;background:var(--bluebg);display:flex;align-items:center;justify-content:center;font-size:16px">${item.icon}</div>
+              <div>
+                <div style="font-size:10px;color:var(--mute)">${item.type}</div>
+                <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
+                  <div style="width:16px;height:16px;border-radius:50%;background:${item.ac}22;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:${item.ac}">${item.av}</div>
+                  <span style="font-size:10px;color:var(--mute)">${item.author}</span>
+                </div>
+              </div>
+            </div>
+            ${item.badge?`<span class="pill" style="background:${item.bc}22;color:${item.bc}">${item.badge}</span>`:''}
+          </div>
+          <div style="font-family:'Playfair Display',serif;font-size:14px;color:var(--txt);margin-bottom:6px;line-height:1.3">${item.title}</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.5;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${item.desc}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+            ${item.tags.map(t=>`<span style="font-size:9px;background:var(--card);color:var(--mute);padding:2px 7px;border-radius:20px">#${t}</span>`).join('')}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <span style="font-size:12px;color:var(--gold)">★ ${item.rating}</span>
+            <span style="font-size:10px;color:var(--mute)">(${item.reviews} reviews · ${item.students>=1000?(item.students/1000).toFixed(1)+'k':item.students} students)</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:var(--txt)">$${item.price}</div>
+            ${state.bought.includes(item.id)
+              ?`<span class="pill" style="background:var(--greenbg);color:var(--green)">✓ Purchased</span>`
+              :`<div style="display:flex;gap:6px">
+                  <button class="btn btn-ghost btn-sm" onclick="toggleCart('${item.id}')">${state.cart.includes(item.id)?'✓ In Cart':'+ Cart'}</button>
+                  <button class="btn btn-primary btn-sm" onclick="buyNow('${item.id}')">Buy Now</button>
+                </div>`}
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div style="margin-top:28px;background:linear-gradient(135deg,var(--surf),var(--card));border:1px solid #f59e0b33;border-radius:14px;padding:24px;text-align:center">
+      <h3 style="font-size:20px;margin-bottom:6px">Have knowledge to share?</h3>
+      <p style="font-size:12px;color:var(--mid);margin-bottom:16px">Publish your course, template or research. Keep 85–92% of every sale.</p>
+      <button class="btn btn-gold" onclick="goto('dashboard')">Start Selling →</button>
+    </div>
+  </div>
+</div>`;};
+
+// ─── JOBS ──────────────────────────────────────────────────────────────────
+PAGES.jobs = ()=>{
+  const types = ['All','Full-time','Remote','Hybrid'];
+  const f = state.filterJob;
+  const jobs = JOBS_DATA.filter(j=>f==='All'||j.type===f||(f==='Remote'&&j.loc.includes('Remote')));
+  return `
+<div style="background:var(--bg)">
+  <div style="background:linear-gradient(135deg,var(--surf),var(--card));border-bottom:1px solid var(--brd);padding:32px 24px">
+    <div style="max-width:960px;margin:0 auto">
+      <div class="section-label" style="margin-bottom:8px">JOB BOARD — HASHTAG MATCHED</div>
+      <h2 style="font-size:24px;margin-bottom:8px">Jobs matched to your hashtags</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        <span style="font-size:11px;color:var(--mute)">Your tags:</span>
+        ${MY_TAGS.map(t=>`<span style="font-size:11px;background:var(--bluebg);color:var(--blue);padding:2px 9px;border-radius:20px">#${t}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:20px">
+        <span style="font-size:12px;color:var(--mid)"><span style="color:var(--blue);font-size:18px;font-weight:900">6</span> Jobs</span>
+        <span style="font-size:12px;color:var(--mid)"><span style="color:var(--green);font-size:18px;font-weight:900">96%</span> Top match</span>
+        <span style="font-size:12px;color:var(--mid)"><span style="color:var(--red);font-size:18px;font-weight:900">3</span> Urgent</span>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:960px;margin:0 auto;padding:24px">
+    <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+      ${types.map(t=>`<div class="tag-chip" style="color:${state.filterJob===t?'#fff':'var(--mute)'};background:${state.filterJob===t?'var(--blue)':'var(--surf)'};border-color:${state.filterJob===t?'var(--blue)':'var(--brd)'};padding:5px 16px" onclick="setJobFilter('${t}')">${t}</div>`).join('')}
+      <span style="margin-left:auto;font-size:11px;color:var(--mute);align-self:center">${jobs.length} jobs</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      ${jobs.map(job=>{
+        const mc = job.match>=90?'var(--green)':job.match>=80?'var(--blue)':'var(--gold)';
+        const isApplied = state.applied.includes(job.id);
+        const isSaved = state.saved.includes(job.id);
+        return `
+        <div class="card" style="border-color:${job.urgent?'#ef444444':'var(--brd)'}">
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:48px;height:48px;border-radius:12px;background:var(--card);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">${job.logo}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+                <span style="font-family:'Playfair Display',serif;font-size:15px;color:var(--txt)">${job.role}</span>
+                ${job.urgent?`<span class="pill" style="background:var(--redbg);color:var(--red)">🔥 URGENT</span>`:''}
+              </div>
+              <div style="font-size:11px;color:var(--mid);margin-bottom:8px">${job.company} · ${job.loc} · ${job.type}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+                ${job.tags.map(t=>{const m=MY_TAGS.includes(t);return`<span style="font-size:10px;color:${m?'var(--blue)':'var(--mute)'};background:${m?'var(--bluebg)':'var(--card)'};border:1px solid ${m?'#3b82f644':'var(--brd)'};padding:2px 8px;border-radius:20px;font-weight:${m?700:400}">#${t}${m?' ✓':''}</span>`;}).join('')}
+              </div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <span style="font-size:12px;color:var(--green);font-weight:700">${job.salary}</span>
+                <span style="font-size:10px;color:var(--mute)">${job.applicants} applicants · ${job.posted} ago</span>
+              </div>
+            </div>
+            <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+              <div style="text-align:center;background:${mc}18;border:1px solid ${mc}33;border-radius:8px;padding:6px 12px">
+                <div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:${mc};line-height:1">${job.match}%</div>
+                <div style="font-size:8px;color:var(--mute);margin-top:1px">MATCH</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button onclick="toggleSave('${job.id}')" style="background:${isSaved?'var(--goldbg)':'var(--card)'};color:${isSaved?'var(--gold)':'var(--mute)'};border:1px solid ${isSaved?'#f59e0b44':'var(--brd)'};padding:6px 11px;font-size:11px;cursor:pointer;border-radius:7px">${isSaved?'⭐':'☆'}</button>
+                <button onclick="applyJob('${job.id}')" style="background:${isApplied?'var(--greenbg)':'linear-gradient(135deg,var(--blue),var(--bluedark))'};color:${isApplied?'var(--green)':'#fff'};border:${isApplied?'1px solid #10b98144':'none'};padding:6px 16px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;border-radius:7px">${isApplied?'✓ Applied':'Apply Now'}</button>
+              </div>
+            </div>
+          </div>
+        </div>`;}).join('')}
+    </div>
+    <div class="card" style="margin-top:24px;display:flex;gap:16px;align-items:center">
+      <span style="font-size:28px">💼</span>
+      <div style="flex:1">
+        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--txt);margin-bottom:3px">Are you hiring?</div>
+        <div style="font-size:11px;color:var(--mid)">Post a job matched to candidates by hashtag. From $99/mo.</div>
+      </div>
+      <button class="btn btn-primary" onclick="goto('recruiter')">Post a Job →</button>
+    </div>
+  </div>
+</div>`;};
+
+// ─── RECRUITER ─────────────────────────────────────────────────────────────
+const ALL_TAGS = ['#OpenToWork','#React','#ProductDesign','#AI','#RemoteWork','#FinTech','#Python','#UXDesign','#DataScience','#FullStack'];
+PAGES.recruiter = ()=>{
+  const filtered = state.searchTags.length===0?CANDIDATES:CANDIDATES.filter(c=>state.searchTags.every(t=>c.tags.map(x=>x.toLowerCase()).includes(t.toLowerCase())));
+  return `
+<div style="background:var(--bg)">
+  <div class="topbar">
+    <span style="font-size:11px;color:var(--mute);letter-spacing:1px">RECRUITER PORTAL · Starter Plan</span>
+    <span class="pill" style="background:${state.recCredits>0?'var(--goldbg)':'var(--redbg)'};color:${state.recCredits>0?'var(--gold)':'var(--red)'}">${state.recCredits} unlocks left</span>
+    <div style="margin-left:auto"><button class="btn btn-ghost btn-sm" onclick="goto('pricing')">Upgrade Plan →</button></div>
+  </div>
+  <div style="padding:24px;max-width:1000px;margin:0 auto">
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:10px;color:var(--blue);font-weight:700;letter-spacing:1px;margin-bottom:10px">🏷 SEARCH CANDIDATES BY HASHTAG</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px">
+        ${ALL_TAGS.map(t=>{const c=t.replace(/^#/,'');const a=state.searchTags.includes(c);return`<span class="tag-chip" style="color:${a?'var(--blue)':'var(--mid)'};background:${a?'var(--bluebg)':'var(--card)'};border-color:${a?'#3b82f666':'var(--brd)'};padding:5px 13px;font-weight:${a?700:400}" onclick="toggleRecTag('${c}')">${t}</span>`;}).join('')}
+      </div>
+      ${state.searchTags.length>0?`<div style="font-size:11px;color:var(--blue)">Filtering: ${state.searchTags.map(t=>'#'+t).join(', ')} · <span style="cursor:pointer;color:var(--red)" onclick="clearRecTags()">Clear ✕</span></div>`:''}
+    </div>
+    <div style="font-size:11px;color:var(--mute);margin-bottom:12px"><span style="color:var(--txt);font-weight:700">${filtered.length}</span> candidates found</div>
+    <div class="grid-3">
+      ${filtered.map(c=>{
+        const unlocked = state.unlocked.includes(c.id);
+        return `
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px">
+            <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+              <div style="width:40px;height:40px;border-radius:50%;background:${c.ac}22;border:2px solid ${c.ac}44;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${c.ac};flex-shrink:0">${c.av}</div>
+              <div style="flex:1">
+                <div style="font-family:'Playfair Display',serif;font-size:13px;color:var(--txt)">${c.name}</div>
+                <div style="font-size:10px;color:var(--mid)">${c.title}</div>
+                <div style="font-size:10px;color:var(--mute)">📍 ${c.loc}</div>
+              </div>
+              <div style="text-align:center;flex-shrink:0">
+                <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:900;color:${c.match>=90?'var(--green)':'var(--blue)'};line-height:1">${c.match}%</div>
+                <div style="font-size:8px;color:var(--mute)">MATCH</div>
+              </div>
+            </div>
+            <div style="margin-bottom:10px">
+              <span class="pill" style="background:${c.status==='Open'?'var(--greenbg)':'var(--bluebg)'};color:${c.status==='Open'?'var(--green)':'var(--blue)'}">
+                ${c.status==='Open'?'🟢 Open to Work':'🔵 Networking'}
+              </span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+              ${c.tags.slice(0,5).map(t=>`<span style="font-size:9px;color:var(--mute);background:var(--card);border:1px solid var(--brd);padding:2px 7px;border-radius:20px">#${t}</span>`).join('')}
+            </div>
+            ${unlocked?`
+            <div style="background:var(--greenbg);border:1px solid #10b98144;border-radius:9px;padding:12px">
+              <div style="font-size:10px;color:var(--green);margin-bottom:6px">✓ Contact Unlocked</div>
+              <div style="font-size:11px;color:var(--mid);margin-bottom:3px">📧 ${c.name.toLowerCase().replace(' ','.')}@email.com</div>
+              <div style="font-size:11px;color:var(--mid);margin-bottom:10px">💼 linkedin.com/in/${c.name.toLowerCase().replace(' ','-')}</div>
+              <button class="btn btn-primary btn-sm btn-full" onclick="alert('Message composer would open here')">✉ Send Message</button>
+            </div>`:`
+            <div style="background:var(--purplebg);border:1px solid #8b5cf644;border-radius:9px;padding:12px;text-align:center">
+              <div style="font-size:10px;color:var(--purple);margin-bottom:6px">🔒 Contact details locked</div>
+              <div style="font-size:10px;color:var(--mute);margin-bottom:9px">Unlock email, phone & LinkedIn · 1 credit</div>
+              <button class="btn btn-sm btn-full btn-purple" onclick="unlockCandidate('${c.id}')" ${state.recCredits<=0?'disabled style="opacity:.5;cursor:not-allowed"':''}>
+                ${state.recCredits>0?'🔓 Unlock — 1 Credit':'No credits — Upgrade'}
+              </button>
+            </div>`}
+          </div>
+        </div>`;}).join('')}
+    </div>
+  </div>
+</div>`;};
+
+// ─── AGENTS ────────────────────────────────────────────────────────────────
+PAGES.agents = ()=>`
+<div style="background:var(--bg)">
+  <div class="topbar">
+    <span style="font-size:11px;color:var(--mute);letter-spacing:1px">🤖 AGENTIC AI HUB · Powered by Claude</span>
+    <span class="pill" style="background:${state.aiCredits>2?'var(--goldbg)':'var(--redbg)'};color:${state.aiCredits>2?'var(--gold)':'var(--red)'}">${state.aiCredits} credits left</span>
+    ${state.aiCredits<=2?`<button class="btn btn-ghost btn-sm" onclick="goto('pricing')">Buy More →</button>`:''}
+    <div style="margin-left:auto;font-size:10px;color:var(--mute)">Free: 5/mo · Pro: 20/mo · Creator: 50/mo</div>
+  </div>
+  <div style="max-width:1000px;margin:0 auto;padding:24px">
+    <div style="text-align:center;margin-bottom:28px">
+      <h2 style="font-size:24px;margin-bottom:6px">Autonomous AI Agents</h2>
+      <p style="font-size:12px;color:var(--mid)">Each agent reads your full CVita profile and takes action. Not just advice — execution.</p>
+    </div>
+    <div class="grid-3" id="agents-grid">
+      ${AGENTS.map(a=>`
+      <div class="card" id="agent-card-${a.id}" style="overflow:hidden;padding:0;border-color:${state.agentResults[a.id]?a.color+'55':'var(--brd)'};box-shadow:${state.agentResults[a.id]?`0 2px 16px ${a.color}18`:'none'}">
+        <div style="height:3px;background:linear-gradient(90deg,${a.color},${a.color}66)"></div>
+        <div style="padding:16px">
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">
+            <div style="width:42px;height:42px;border-radius:10px;background:${a.color}18;border:1px solid ${a.color}33;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">${a.icon}</div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:2px">${a.name}</div>
+              <span class="pill" style="background:${a.color}18;color:${a.color};font-size:9px">${a.cat}</span>
+            </div>
+          </div>
+          <p style="font-size:11px;color:var(--mid);line-height:1.5;margin-bottom:11px">${a.desc}</p>
+          ${state.agentResults[a.id]?`
+          <div style="background:${a.color}0a;border:1px solid ${a.color}33;border-radius:8px;padding:10px;margin-bottom:11px;max-height:140px;overflow-y:auto">
+            <div style="font-size:9px;color:${a.color};font-weight:700;margin-bottom:5px">✓ AGENT OUTPUT</div>
+            <pre style="font-family:'DM Mono',monospace;font-size:10px;color:var(--mid);white-space:pre-wrap;line-height:1.7">${state.agentResults[a.id]}</pre>
+          </div>`:''}
+          <button id="agent-btn-${a.id}" class="btn btn-full" onclick="runAgent('${a.id}')"
+            style="padding:9px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;cursor:${(state.agentRunning||state.aiCredits<=0)?'not-allowed':'pointer'};border:none;border-radius:8px;background:${state.agentResults[a.id]?'var(--greenbg)':state.aiCredits<=0?'#222':`linear-gradient(135deg,${a.color},${a.color}cc)`};color:${state.agentResults[a.id]?'var(--green)':state.aiCredits<=0?'var(--mute)':'#fff'}">
+            ${state.agentResults[a.id]?'✓ Run Again':state.aiCredits<=0?'No Credits':'▶ Run Agent'}
+          </button>
+        </div>
+      </div>`).join('')}
+    </div>
+    ${state.aiCredits===0?`
+    <div class="alert alert-purple" style="margin-top:20px;flex-direction:column;text-align:center;gap:12px">
+      <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700">All 5 free credits used</div>
+      <div style="font-size:12px;color:var(--mid)">Upgrade to Pro for 20/mo or Creator for 50/mo</div>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-primary" onclick="goto('pricing')">Upgrade to Pro — $15/mo</button>
+        <button class="btn btn-ghost" onclick="alert('Credit pack purchase coming soon!')">Buy 10 credits — $4</button>
+      </div>
+    </div>`:''}
+  </div>
+</div>`;
+
+// ─── PRICING ───────────────────────────────────────────────────────────────
+PAGES.pricing = ()=>{
+  const proPlan = [
+    {id:'free',name:'Free',price:0,c:'var(--mute)',tag:'',features:['Basic CV — 5 sections','3 hashtags','1 knowledge item','PDF export (watermark)','2 AI credits/month','Public profile'],missing:['All 10 CV sections','Knowledge monetization','Patents & IP','Ventures & Brand','Priority recruiter visibility']},
+    {id:'pro',name:'Pro',price:15,c:'var(--blue)',tag:'MOST POPULAR',features:['All 10 CV sections','Unlimited hashtags','Unlimited knowledge items','💰 Sell knowledge (keep 85%)','20 AI credits/month','No-watermark PDF & DOCX','Priority recruiter visibility','Patents, Innovation & Brand'],missing:['Recruiter portal','Custom domain']},
+    {id:'creator',name:'Creator',price:29,c:'var(--gold)',tag:'BEST FOR EARNING',features:['Everything in Pro','Keep 92% of sales','50 AI credits/month','⭐ Featured in search','Profile boost included','Custom domain','Full analytics','Early access to new agents'],missing:['Recruiter portal']},
+    {id:'enterprise',name:'Enterprise',price:99,c:'var(--purple)',tag:'TEAMS',features:['Everything in Creator','Team dashboard (20 users)','Recruiter portal access','Unlimited AI credits','ATS integration','API access','Dedicated support'],missing:[]},
+  ];
+  const recPlan = [
+    {id:'r1',name:'Starter',price:99,c:'var(--teal)',tag:'',features:['50 candidate unlocks/mo','Hashtag search & filter','Save candidates & pipeline','5 job posts/month','Basic analytics'],missing:[]},
+    {id:'r2',name:'Growth',price:299,c:'var(--blue)',tag:'POPULAR',features:['Unlimited unlocks','Advanced hashtag targeting','AI outreach writer','Unlimited job posts','Full analytics & ATS export'],missing:[]},
+    {id:'r3',name:'Agency',price:899,c:'var(--purple)',tag:'',features:['Everything in Growth','10 recruiter seats','Client reporting portal','API access','Dedicated account manager'],missing:[]},
+  ];
+  const plans = state.pricingTab==='pro'?proPlan:recPlan;
+  return `
+<div style="background:var(--bg);padding:40px 24px;min-height:100vh">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:36px">
+      <div class="section-label" style="margin-bottom:8px">PRICING</div>
+      <h2 style="font-size:30px;margin-bottom:10px">Simple, honest pricing</h2>
+      <p style="font-size:13px;color:var(--mid);margin-bottom:24px">Start free. Pay only when CVita makes you money.</p>
+      <div style="display:inline-flex;background:var(--surf);border:1px solid var(--brd);border-radius:10px;padding:4px;gap:4px">
+        <div style="padding:8px 24px;border-radius:8px;cursor:pointer;font-size:12px;background:${state.pricingTab==='pro'?'var(--blue)':'transparent'};color:${state.pricingTab==='pro'?'#fff':'var(--mute)'};font-weight:${state.pricingTab==='pro'?700:400};transition:all .15s" onclick="setPricingTab('pro')">For Professionals</div>
+        <div style="padding:8px 24px;border-radius:8px;cursor:pointer;font-size:12px;background:${state.pricingTab==='rec'?'var(--blue)':'transparent'};color:${state.pricingTab==='rec'?'#fff':'var(--mute)'};font-weight:${state.pricingTab==='rec'?700:400};transition:all .15s" onclick="setPricingTab('rec')">For Recruiters</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(${plans.length},1fr);gap:14px;margin-bottom:32px">
+      ${plans.map(plan=>{const popular=['MOST POPULAR','POPULAR','BEST FOR EARNING'].includes(plan.tag);return`
+      <div style="background:var(--surf);border:2px solid ${popular?plan.c:'var(--brd)'};border-radius:14px;overflow:hidden;box-shadow:${popular?`0 4px 24px ${plan.c}22`:'none'}">
+        ${plan.tag?`<div style="background:${plan.c};padding:5px;text-align:center;font-size:9px;font-weight:700;color:#fff;letter-spacing:1px">${plan.tag}</div>`:''}
+        <div style="padding:22px">
+          <div style="font-size:13px;font-weight:700;color:${plan.c};margin-bottom:8px">${plan.name}</div>
+          <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:20px">
+            <span style="font-family:'Playfair Display',serif;font-size:36px;font-weight:900;color:var(--txt)">$${plan.price}</span>
+            <span style="font-size:11px;color:var(--mute)">/month</span>
+          </div>
+          ${plan.features.map(f=>`<div style="display:flex;gap:8px;font-size:11px;color:var(--mid);padding:5px 0;border-bottom:1px solid var(--brd)"><span style="color:var(--green);flex-shrink:0">✓</span>${f}</div>`).join('')}
+          ${plan.missing.map(f=>`<div style="display:flex;gap:8px;font-size:11px;color:var(--mute);padding:5px 0;border-bottom:1px solid var(--brd);opacity:.5"><span style="flex-shrink:0">✗</span>${f}</div>`).join('')}
+          <button class="btn btn-full" style="padding:11px;margin-top:18px;border:none;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;border-radius:8px;background:${popular?`linear-gradient(135deg,${plan.c},${plan.c}cc)`:'var(--card)'};color:${popular?'#fff':'var(--mute)'}" onclick="goto('dashboard')">
+            ${plan.name==='Free'?'Start Free':plan.price===99&&state.pricingTab==='pro'?'Contact Sales':`Get ${plan.name}`}
+          </button>
+        </div>
+      </div>`;}).join('')}
+    </div>
+    <div class="card">
+      <div class="section-label" style="margin-bottom:18px">FAQ</div>
+      <div class="grid-2">
+        ${[['Do I keep my data if I downgrade?','Yes. Your data is always yours. If you downgrade, paid features are hidden but nothing is deleted.'],['When do earnings pay out?','Every Monday. Minimum $20 to trigger. You keep 85% (Pro) or 92% (Creator).'],['Can I cancel anytime?','Yes. No contracts, no fees. Cancel in one click from Settings.'],['How does the recruiter paywall work?','Recruiters pay per candidate unlock. You get notified and can reply directly.']].map(([q,a])=>`
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--txt);margin-bottom:5px">${q}</div>
+          <div style="font-size:11px;color:var(--mid);line-height:1.6">${a}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+</div>`;};
+
+// ─── ACTIONS ───────────────────────────────────────────────────────────────
+INITS = {};
+function heroSignup(){const e=document.getElementById('hero-email');if(e&&e.value){document.getElementById('hero-success').style.display='flex';}}
+function buyBoost(){state.boostBought=true;const b=document.getElementById('boost-banner');if(b)b.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--greenbg);border-bottom:1px solid #10b98144"><span>✅</span><span style="font-size:11px;color:var(--green)">Profile Boosted! You\'ll appear in top 3 recruiter results for 30 days.</span></div>';}
+function switchSection(id){state.activeSection=id;document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));const si=document.getElementById('si-'+id);if(si)si.classList.add('active');const sc=document.getElementById('section-content');if(sc)sc.innerHTML=getSectionContent(id);const st=document.getElementById('section-title');if(st)st.textContent=SECTIONS.find(s=>s.id===id)?.icon+' '+id.toUpperCase();const tb=document.getElementById('ai-tips-box');if(tb)tb.style.display='none';}
+function runAI(){
+  if(state.aiRunning||state.aiCredits<=0)return;
+  state.aiRunning=true;state.aiCredits--;
+  const btn=document.getElementById('ai-btn');
+  if(btn)btn.innerHTML='<span style="display:inline-block;animation:spin 1s linear infinite">⟳</span> AI working…';
+  document.getElementById('credit-count')&&(document.getElementById('credit-count').textContent=state.aiCredits);
+  setTimeout(()=>{
+    state.aiRunning=false;
+    const tips=(AI_TIPS[state.activeSection]||AI_TIPS.default);
+    const box=document.getElementById('ai-tips-box');
+    if(box){box.style.display='flex';document.getElementById('ai-tips-content').innerHTML=tips.map(t=>`<div style="display:flex;gap:9px;font-size:12px;color:var(--mid);margin-bottom:7px;line-height:1.5"><span style="color:var(--green);flex-shrink:0">✦</span>${t}</div>`).join('');}
+    if(btn)btn.innerHTML=`🤖 AI Optimise · <span id="credit-count">${state.aiCredits}</span> credits`;
+    if(state.aiCredits===0){const nb=document.getElementById('no-credits-box');if(nb)nb.style.display='flex';if(btn)btn.disabled=true;}
+  },1800);
+}
+function toggleCart(id){if(state.cart.includes(id))state.cart=state.cart.filter(x=>x!==id);else state.cart.push(id);goto('market');}
+function buyNow(id){state.bought.push(id);state.cart=state.cart.filter(x=>x!==id);goto('market');}
+function checkoutAll(){state.bought=[...state.bought,...state.cart];state.cart=[];goto('market');}
+function setMarketFilter(f){state.marketFilter=f;goto('market');}
+function setJobFilter(f){state.filterJob=f;goto('jobs');}
+function toggleSave(id){if(state.saved.includes(id))state.saved=state.saved.filter(x=>x!==id);else state.saved.push(id);goto('jobs');}
+function applyJob(id){if(!state.applied.includes(id))state.applied.push(id);goto('jobs');}
+function toggleRecTag(tag){if(state.searchTags.includes(tag))state.searchTags=state.searchTags.filter(x=>x!==tag);else state.searchTags.push(tag);goto('recruiter');}
+function clearRecTags(){state.searchTags=[];goto('recruiter');}
+function unlockCandidate(id){if(state.recCredits<=0)return;state.recCredits--;state.unlocked.push(id);goto('recruiter');}
+function setPricingTab(t){state.pricingTab=t;goto('pricing');}
+function runAgent(id){
+  if(state.agentRunning||state.aiCredits<=0)return;
+  state.agentRunning=id;state.aiCredits--;
+  const btn=document.getElementById('agent-btn-'+id);
+  if(btn){btn.innerHTML='<span style="display:inline-block;animation:spin 1s linear infinite">⟳</span> Running…';btn.disabled=true;}
+  setTimeout(()=>{
+    const agent=AGENTS.find(a=>a.id===id);
+    if(agent){state.agentResults[id]=agent.output;}
+    state.agentRunning=null;
+    goto('agents');
+  },2000);
+}
+// Boot
+goto('landing');
+</script>
 </body>
 </html>
