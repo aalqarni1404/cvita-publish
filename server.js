@@ -65,31 +65,90 @@ app.post('/api/payments/checkout', async (req, res) => {
   }
 });
 
+// Sample dashboard data for a professional. In a real app this would be tied to the
+// authenticated user. Includes CV sections, available AI credits, an overall score
+// and some AI suggestions.
+const dashboardData = {
+  user: {
+    name: 'Alex Morgan',
+    title: 'Senior Product Designer',
+  },
+  aiCredits: 5,
+  aiScore: 82,
+  sections: [
+    { id: 'education', title: 'Education', items: [
+      { school: 'University of Example', degree: 'B.Sc. Design', year: '2018' },
+    ] },
+    { id: 'experience', title: 'Experience', items: [
+      { company: 'DesignCo', role: 'Product Designer', dates: '2019–present' },
+      { company: 'CreativeWorks', role: 'UX Intern', dates: '2017–2018' },
+    ] },
+    { id: 'skills', title: 'Skills', items: ['UI/UX Design', 'Figma', 'CSS'] },
+  ],
+  aiTips: [
+    'Consider adding recent projects to your Experience section.',
+    'Highlight leadership roles or certifications.',
+  ],
+};
+
+// Sample candidates for recruiters. In a real app this would come from a
+// database and include many more fields. Each candidate has an ID so they
+// can be unlocked. A recruiter’s available credits would also be tracked
+// server-side.
+const candidateData = [
+  {
+    id: 1,
+    name: 'Jane Doe',
+    title: 'Product Designer',
+    location: 'New York, USA',
+    match: 92,
+    status: 'Open',
+    tags: ['ProductDesign', 'UI', 'UX', 'Figma'],
+    unlocked: false,
+  },
+  {
+    id: 2,
+    name: 'John Smith',
+    title: 'Data Analyst',
+    location: 'San Francisco, USA',
+    match: 88,
+    status: 'Networking',
+    tags: ['DataScience', 'Python', 'SQL', 'Tableau'],
+    unlocked: false,
+  },
+];
+
+// Track which candidates have been unlocked by the recruiter. This is in-memory
+// only; a persistent store would be needed for a production application.
+const unlockedCandidates = new Set();
+
 // Endpoint: GET /api/dashboard
-// Returns placeholder dashboard data for a user.
+// Returns dashboard data for the current user.
 app.get('/api/dashboard', (req, res) => {
-  res.json({
-    sections: [
-      { id: 'education', title: 'Education', items: [] },
-      { id: 'experience', title: 'Experience', items: [] },
-      { id: 'skills', title: 'Skills', items: [] },
-    ],
-    aiTips: [
-      'Consider adding recent projects to your Experience section.',
-      'Highlight leadership roles or certifications.',
-    ],
-  });
+  res.json(dashboardData);
 });
 
 // Endpoint: GET /api/recruiter
-// Returns placeholder candidate data for recruiters.
+// Returns the list of candidates with an `unlocked` flag. In a real app the
+// unlocked status would depend on the recruiter’s account.
 app.get('/api/recruiter', (req, res) => {
-  res.json({
-    candidates: [
-      { name: 'Jane Doe', title: 'Product Designer', location: 'New York, USA' },
-      { name: 'John Smith', title: 'Data Analyst', location: 'San Francisco, USA' },
-    ],
-  });
+  const candidates = candidateData.map(c => ({
+    ...c,
+    unlocked: unlockedCandidates.has(c.id),
+  }));
+  res.json({ candidates });
+});
+
+// Endpoint: POST /api/recruiter/unlock
+// Unlocks a candidate for the recruiter. Expects { candidateId } in the body.
+app.post('/api/recruiter/unlock', (req, res) => {
+  const { candidateId } = req.body;
+  const id = Number(candidateId);
+  if (!candidateData.find(c => c.id === id)) {
+    return res.status(404).json({ error: 'Candidate not found' });
+  }
+  unlockedCandidates.add(id);
+  res.json({ success: true, id });
 });
 
 // Start the server.

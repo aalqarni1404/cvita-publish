@@ -987,6 +987,44 @@ async function loadPayments() {
   }
 }
 
+// Load dynamic data for the professional dashboard. Fetches current AI credits and
+// other personalised info from the backend and updates simple fields on the page.
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/dashboard');
+    const data = await res.json();
+    // Update AI credits on the dashboard if the element exists.
+    const creditsEl = document.getElementById('credit-count');
+    if (creditsEl && data.aiCredits !== undefined) {
+      creditsEl.textContent = data.aiCredits;
+    }
+    // Update AI career score if present on the right panel.
+    const scoreEl = document.querySelector('.right-panel > div > .bar-fill');
+    if (scoreEl && data.aiScore !== undefined) {
+      scoreEl.style.width = data.aiScore + '%';
+    }
+    // Optionally populate other sections or show AI tips; left as placeholders.
+  } catch (err) {
+    console.error('Failed to load dashboard data', err);
+  }
+}
+
+// Load dynamic data for the recruiter portal. Replaces the CANDIDATES array with
+// data from the backend so that the recruiter view shows up-to-date candidates.
+async function loadRecruiter() {
+  try {
+    const res = await fetch('/api/recruiter');
+    const data = await res.json();
+    if (Array.isArray(data.candidates)) {
+      // Update the global CANDIDATES variable defined in the script. This will
+      // cause the recruiter page to render the new list on next navigation.
+      window.CANDIDATES = data.candidates;
+    }
+  } catch (err) {
+    console.error('Failed to load recruiter data', err);
+  }
+}
+
 // Create a test payment intent via the backend. This uses Stripe on the server.
 async function checkout(amount, description) {
   try {
@@ -1011,6 +1049,10 @@ async function checkout(amount, description) {
 // Register after load hooks
 AFTER_LOAD.admin = loadAdminMetrics;
 AFTER_LOAD.payments = loadPayments;
+
+// When navigating to the dashboard or recruiter pages, fetch dynamic data.
+AFTER_LOAD.dashboard = loadDashboard;
+AFTER_LOAD.recruiter = loadRecruiter;
 
 function heroSignup(){const e=document.getElementById('hero-email');if(e&&e.value){document.getElementById('hero-success').style.display='flex';}}
 function buyBoost(){state.boostBought=true;const b=document.getElementById('boost-banner');if(b)b.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--greenbg);border-bottom:1px solid #10b98144"><span>✅</span><span style="font-size:11px;color:var(--green)">Profile Boosted! You\'ll appear in top 3 recruiter results for 30 days.</span></div>';}
