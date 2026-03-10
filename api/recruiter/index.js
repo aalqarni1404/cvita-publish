@@ -15,7 +15,7 @@ module.exports = (req, res) => {
       description: '6+ years leading cross-functional product teams.',
       tags: ['#product', '#management', '#leadership'],
       unlocked: false,
-    res.status(200).json({ candidates });
-  
-  
+    },
+  ];
+  res.status(200).json({ candidates });
 };
