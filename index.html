@@ -960,9 +960,13 @@ async function loadAdminMetrics() {
   try {
     const res = await fetch('/api/admin/metrics');
     const data = await res.json();
-    document.getElementById('admin-users')?.textContent = data.users;
-    document.getElementById('admin-marketplace')?.textContent = data.marketplaceItems;
-    document.getElementById('admin-recruiters')?.textContent = data.recruiters;
+    // Safely update admin dashboard metrics without using optional chaining on the left-hand side.
+    const usersEl = document.getElementById('admin-users');
+    if (usersEl) usersEl.textContent = data.users;
+    const marketplaceEl = document.getElementById('admin-marketplace');
+    if (marketplaceEl) marketplaceEl.textContent = data.marketplaceItems;
+    const recruitersEl = document.getElementById('admin-recruiters');
+    if (recruitersEl) recruitersEl.textContent = data.recruiters;
   } catch (err) {
     console.error('Failed to load admin metrics', err);
   }
